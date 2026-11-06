@@ -82,7 +82,7 @@ async (page, fixture) => {
   );
   await capture("cooms11-camera-result");
   await page
-    .getByRole("button", { name: "Valider la remise de la boîte", exact: true })
+    .getByRole("button", { name: "Valider la remise du cadeau", exact: true })
     .click();
   await page
     .getByRole("heading", { name: "Remise enregistrée", exact: true })

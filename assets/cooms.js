@@ -18,6 +18,28 @@
       }
     });
   });
+  var gift = document.querySelector("#cb-gift");
+  var date = document.querySelector("#cb-valid-until");
+  function updatePreview() {
+    if (!gift || !date) return;
+    document.querySelector("[data-gift-preview]").textContent =
+      gift.value.trim() || "Votre cadeau";
+    var parts = date.value.split("-");
+    document.querySelector("[data-date-preview]").textContent =
+      parts.length === 3
+        ? "Valable jusqu’au " +
+          parts[2] +
+          "/" +
+          parts[1] +
+          "/" +
+          parts[0] +
+          " inclus"
+        : "Choisissez une date de validité";
+  }
+  if (gift && date) {
+    gift.addEventListener("input", updatePreview);
+    date.addEventListener("input", updatePreview);
+  }
   window.addEventListener("pageshow", function (event) {
     if (event.persisted) {
       window.location.reload();

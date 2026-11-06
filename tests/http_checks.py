@@ -25,7 +25,7 @@ code,body,headers=request(url(),auth=False)
 s=body.decode();check(code==200 and 'Accès équipe COOMS' in s and fixture['bons'][0]['lot_name'] not in s,'Anonymous page hides private lot and provides login')
 check('no-store' in headers.get('Cache-Control','') and 'noindex' in headers.get('X-Robots-Tag',''),'Scan cache and indexing headers')
 check(headers.get('Referrer-Policy')=='no-referrer','Token referrer suppressed')
-check('Valider la remise de la boîte' not in s,'Anonymous cannot see withdrawal action')
+check('Valider la remise du cadeau' not in s,'Anonymous cannot see withdrawal action')
 code,body,_=request(url(),urllib.parse.urlencode({'_wpnonce':'invalid'}).encode())
 check(code==403 and 'Votre session de confirmation a expiré' in body.decode(),'Invalid nonce POST refused')
 _,body,_=request(url());s=body.decode();check('<h1>Bon valide</h1>' in s,'Invalid POST did not consume bon')
@@ -47,7 +47,7 @@ archive=zipfile.ZipFile(io.BytesIO(data));check(len(archive.namelist())==25 and 
 (root/'output/exported-bon.png').write_bytes(archive.read(archive.namelist()[0]))
 code,data2,_=request(zip_url);archive2=zipfile.ZipFile(io.BytesIO(data2));check({x:archive.read(x) for x in archive.namelist()}=={x:archive2.read(x) for x in archive2.namelist()},'Repeated export gives identical images')
 code,data,_=request(csv_url);rows=list(csv.reader(io.StringIO(data.decode('utf-8-sig')),delimiter=';'))
-check(code==200 and len(rows)==26 and len(rows[0])==6,'CSV has 25 bons and expected columns')
+check(code==200 and len(rows)==26 and len(rows[0])==7,'CSV has 25 bons and expected columns')
 check(sum(row[4]=='Utilisé' for row in rows[1:])==1,'CSV withdrawal count matches actual redemption')
 check(all(b['token'].encode() not in data for b in fixture['bons']),'CSV contains no secret tokens')
 check(request(zip_url,auth=False)[0]!=200,'Anonymous export refused')
@@ -94,4 +94,27 @@ check(code==200 and 'Ouvrir la caméra' in body.decode(),'WordPress Scanner menu
 cookie=admin_cookie
 code,body,_=request(base+'/wp-admin/admin.php?page=cooms-bons')
 check(code==200 and 'Vos lots' in body.decode() and fixture['bons'][0]['lot_name'] in body.decode(),'Default management view lists distributions')
+# Actual creation form: invalid date preserves fields, then creates a custom lot.
+_,body,_=request(base+'/wp-admin/admin.php?page=cooms-bons-new');s=body.decode()
+nonce=re.search(r'name="_wpnonce" value="([^"]+)"',s).group(1)
+key=re.search(r'name="request_key" value="([^"]+)"',s).group(1)
+from datetime import date,timedelta
+selected=(date.today()+timedelta(days=60)).isoformat()
+custom_gift='Coffret de 8 cookies — 40 CHF'
+payload={'action':'cooms_create','_wpnonce':nonce,'request_key':key,'name':'RECETTE HTTP personnalisée','quantity':'2','gift':custom_gift,'valid_until':'2020-01-01'}
+_,body,_=request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(payload).encode());s=body.decode()
+check('Choisissez une date de fin de validité' in s and custom_gift in s and key in s,'Invalid date preserves entered gift, name and idempotency key')
+payload['valid_until']=selected
+_,body,_=request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(payload).encode());s=body.decode()
+lot_id=int(re.search(r'name="lot"[^>]*>.*?<option value="(\d+)"\s+selected',s,re.S).group(1))
+fixture.setdefault('extra_lots',[]).append({'id':lot_id,'request_key':key})
+(root/'output/http-fixture.json').write_text(json.dumps(fixture))
+check(custom_gift in s and date.fromisoformat(selected).strftime('%d/%m/%Y') in s,'Custom gift and inclusive validity visible on created lot')
+links=[html.unescape(x) for x in re.findall(r'href="([^"]+)"',s)]
+custom_csv=next(x for x in links if 'format=csv' in x)
+_,data,_=request(custom_csv);custom_rows=list(csv.reader(io.StringIO(data.decode('utf-8-sig')),delimiter=';'))
+check(len(custom_rows)==3 and all(row[-1]==custom_gift and row[3]==date.fromisoformat(selected).strftime('%d/%m/%Y') for row in custom_rows[1:]),'Custom gift/date exported on both CSV rows')
+_,body,_=request(scan);lookup_nonce=re.search(r'name="_wpnonce" value="([^"]+)"',body.decode()).group(1)
+_,body,_=request(scan,urllib.parse.urlencode({'code':custom_rows[1][0],'_wpnonce':lookup_nonce}).encode())
+check(custom_gift in body.decode() and 'Valider la remise du cadeau' in body.decode() and 'Une boîte de 4 cookies' not in body.decode(),'Seller lookup displays custom gift without hardcoded box copy')
 print('SUCCESS:',passed,'HTTP checks',flush=True)

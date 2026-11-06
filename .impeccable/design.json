@@ -322,7 +322,13 @@
         "name": "compact",
         "value": "600px"
       }
-    ]
+    ],
+    "lotCustomization": {
+      "giftMaxLength": 190,
+      "validity": "inclusive Geneva date; six months proposed",
+      "preview": "live gift and date; server-side validation with retained input",
+      "csv": "gift appended as seventh column"
+    }
   },
   "components": [
     {

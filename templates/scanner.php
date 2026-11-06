@@ -12,7 +12,7 @@ defined('ABSPATH') || exit;
 <body class="cb-scan cb-scanner-page"><header class="cb-brand"><a href="<?php echo esc_url(self::url()); ?>">COOMS</a><span>Espace boutique</span></header>
 <main class="cb-scanner" id="main">
 <?php if ($access === 'allowed') : ?>
-    <header class="cb-scanner-heading"><h1>Scanner un bon</h1><p>Vérifiez le bon avant de remettre la boîte.</p></header>
+    <header class="cb-scanner-heading"><h1>Scanner un bon</h1><p>Vérifiez le bon avant de remettre le cadeau.</p></header>
     <?php if ($error) : ?><div class="cb-error" role="alert"><?php echo esc_html($error); ?> <a href="<?php echo esc_url(self::url()); ?>">Réessayer</a></div><?php endif; ?>
     <section class="cb-camera-section" aria-label="Lecture du QR code" data-scanner data-home="<?php echo esc_url(home_url('/')); ?>">
         <div class="cb-viewfinder" data-viewfinder>

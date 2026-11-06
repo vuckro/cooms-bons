@@ -51,7 +51,19 @@ final class Plugin {
         }
         if ($page === 'cooms-bons-new') {
             $error = '';
-            $name = ''; $quantity = 25; $key = bin2hex(random_bytes(32));
+            $name = ''; $quantity = 25; $gift = Store::TITLE;
+            $valid_until = (new \DateTimeImmutable(Store::expiry(new \DateTimeImmutable('now')), new \DateTimeZone('UTC')))->modify('-1 second')->setTimezone(new \DateTimeZone('Europe/Zurich'))->format('Y-m-d');
+            $key = bin2hex(random_bytes(32));
+            $flash = isset($_GET['form_error']) && is_string($_GET['form_error']) ? sanitize_key(wp_unslash($_GET['form_error'])) : '';
+            if (preg_match('/^[a-f0-9]{32}$/D', $flash)) {
+                $flash_key = 'cooms_form_' . get_current_user_id() . '_' . $flash;
+                $saved = get_transient($flash_key);
+                delete_transient($flash_key);
+                if (is_array($saved)) {
+                    $error = $saved['error']; $name = $saved['name']; $quantity = $saved['quantity'];
+                    $gift = $saved['gift']; $valid_until = $saved['valid_until']; $key = $saved['key'];
+                }
+            }
             require dirname(COOMS_BONS_FILE) . '/templates/new.php';
             return;
         }
@@ -80,11 +92,19 @@ final class Plugin {
         $name = isset($_POST['name']) && is_string($_POST['name']) ? sanitize_text_field(wp_unslash($_POST['name'])) : '';
         $quantity = isset($_POST['quantity']) && is_scalar($_POST['quantity']) ? filter_var(wp_unslash($_POST['quantity']), FILTER_VALIDATE_INT) : 0;
         $key = isset($_POST['request_key']) && is_string($_POST['request_key']) ? sanitize_text_field(wp_unslash($_POST['request_key'])) : '';
-        $id = Store::create_lot($name, (int) $quantity, $key);
+        $gift = isset($_POST['gift']) && is_string($_POST['gift']) ? sanitize_text_field(wp_unslash($_POST['gift'])) : '';
+        $valid_until = isset($_POST['valid_until']) && is_string($_POST['valid_until']) ? wp_unslash($_POST['valid_until']) : '';
+        $id = Store::create_lot($name, (int) $quantity, $key, $gift, $valid_until);
         if (is_wp_error($id)) {
             $error = $id->get_error_message();
             if (!preg_match('/^[a-f0-9]{64}$/D', $key)) { $key = bin2hex(random_bytes(32)); }
-            wp_die(esc_html($error) . ' <a href="' . esc_url(admin_url('admin.php?page=cooms-bons-new')) . '">Revenir au formulaire</a>', 'Création impossible', ['response' => 400, 'back_link' => true]);
+            $flash = bin2hex(random_bytes(16));
+            set_transient('cooms_form_' . get_current_user_id() . '_' . $flash, [
+                'error' => $error, 'name' => mb_substr($name, 0, 160), 'quantity' => (int) $quantity,
+                'gift' => mb_substr($gift, 0, 190), 'valid_until' => substr($valid_until, 0, 10), 'key' => $key,
+            ], 10 * MINUTE_IN_SECONDS);
+            wp_safe_redirect(add_query_arg(['page' => 'cooms-bons-new', 'form_error' => $flash], admin_url('admin.php')), 303);
+            exit;
         }
         wp_safe_redirect(add_query_arg(['page' => 'cooms-bons', 'lot' => $id, 'created' => 1], admin_url('admin.php')));
         exit;
@@ -132,7 +152,7 @@ final class Plugin {
                     } else {
                         $result = Store::redeem($token);
                         if ($result['result'] === 'error') {
-                            $message = 'La remise n’a pas pu être confirmée. Actualisez le statut avant de remettre la boîte.';
+                            $message = 'La remise n’a pas pu être confirmée. Actualisez le statut avant de remettre le cadeau.';
                             status_header(503);
                         } elseif ($result['result'] === 'success') {
                             // Post/Redirect/Get: refreshing never resubmits a withdrawal.

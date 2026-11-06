@@ -40,6 +40,26 @@ final class Export {
         exit;
     }
 
+    /** Pixel-based wrapping, including long unbroken names. */
+    public static function gift_lines(string $value, string $font, int $size): array {
+        $lines = []; $line = '';
+        $fits = static function (string $text) use ($size, $font): bool {
+            $box = imagettfbbox($size, 0, $font, $text);
+            return $box[2] - $box[0] <= 860;
+        };
+        foreach (preg_split('/\s+/u', trim($value)) as $word) {
+            $candidate = $line === '' ? $word : $line . ' ' . $word;
+            if ($fits($candidate)) { $line = $candidate; continue; }
+            if ($line !== '') { $lines[] = $line; $line = ''; }
+            foreach (preg_split('//u', $word, -1, PREG_SPLIT_NO_EMPTY) as $character) {
+                if (!$fits($line . $character) && $line !== '') { $lines[] = $line; $line = ''; }
+                $line .= $character;
+            }
+        }
+        if ($line !== '') { $lines[] = $line; }
+        return $lines;
+    }
+
     public static function png(object $bon): string {
         $qr_code = \Endroid\QrCode\QrCode::create(Store::url($bon))->setSize(540)->setMargin(32)
             ->setErrorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::Medium);
@@ -57,8 +77,15 @@ final class Export {
             imagettftext($image, $size, 0, (int) ((1000 - ($box[2] - $box[0])) / 2), $y, $color, $font, $value);
         };
         $text('COOMS', 48, 110, $ink);
-        $text('Une boîte de 4 cookies', 30, 205, $ink);
-        $text('Bon cadeau · Valeur 20 CHF', 20, 258, $muted);
+        $text('Bon cadeau', 19, 168, $muted);
+        $size = 28;
+        do {
+            $lines = self::gift_lines($bon->title, $font, $size);
+            if (count($lines) * ($size + 10) <= 116) { break; }
+            $size--;
+        } while ($size >= 12);
+        $baseline = 200 + (116 - count($lines) * ($size + 10)) / 2;
+        foreach ($lines as $line) { $text($line, $size, (int) $baseline, $ink); $baseline += $size + 10; }
         imagecopy($image, $qr, (int) ((1000 - imagesx($qr)) / 2), 325, 0, 0, imagesx($qr), imagesy($qr));
         $text($bon->code, 24, 1010, $ink);
         $text('Valable jusqu’au ' . Store::expiry_label($bon->expires_at) . ' inclus', 21, 1080, $ink);
@@ -89,13 +116,13 @@ final class Export {
         header('X-Content-Type-Options: nosniff');
         $out = fopen('php://output', 'wb');
         fwrite($out, "\xEF\xBB\xBF");
-        fputcsv($out, ['Code', 'Lot', 'Création (Genève)', 'Valable jusqu’au', 'Statut', 'Retrait (Genève)'], ';', '"', '');
+        fputcsv($out, ['Code', 'Lot', 'Création (Genève)', 'Valable jusqu’au', 'Statut', 'Retrait (Genève)', 'Cadeau'], ';', '"', '');
         $labels = ['used' => 'Utilisé', 'available' => 'Disponible', 'expired' => 'Expiré'];
         $offset = 0;
         do {
             $rows = Store::bons($lot, $status, 500, $offset, $as_of);
             foreach ($rows as $bon) {
-                $line = [$bon->code, $bon->lot_name, Store::format_date($bon->created_at, true), Store::expiry_label($bon->expires_at), $labels[Store::status($bon, $as_of)], $bon->redeemed_at ? Store::format_date($bon->redeemed_at, true) : ''];
+                $line = [$bon->code, $bon->lot_name, Store::format_date($bon->created_at, true), Store::expiry_label($bon->expires_at), $labels[Store::status($bon, $as_of)], $bon->redeemed_at ? Store::format_date($bon->redeemed_at, true) : '', $bon->title];
                 fputcsv($out, array_map([self::class, 'cell'], $line), ';', '"', '');
             }
             $offset += count($rows);
