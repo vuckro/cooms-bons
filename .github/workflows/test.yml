@@ -69,7 +69,7 @@ jobs:
         if: always() && matrix.php == '8.3'
         with:
           name: scanner-browser-captures
-          path: ../output/playwright/cooms11*.png
+          path: output/browser/cooms11*.png
       - name: Remove disposable HTTP fixtures
         if: always()
         run: |

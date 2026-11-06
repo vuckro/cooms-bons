@@ -11,6 +11,7 @@ assert f['base'].startswith(('http://localhost:','http://127.0.0.1:'))
 assert shutil.which('ffmpeg'), 'ffmpeg is required for virtual-camera checks'
 cli=os.environ.get('PWCLI', str(Path.home()/'.codex/skills/playwright/scripts/playwright_cli.sh'))
 session='cooms-camera-qa'
+(root/'output/browser').mkdir(parents=True,exist_ok=True)
 video=root/'output/camera.y4m'
 subprocess.run(['ffmpeg','-y','-loglevel','error','-loop','1','-i',str(root/'output/camera-bon.png'),'-vf','scale=-2:460,pad=640:480:(ow-iw)/2:(oh-ih)/2:color=white','-t','3','-r','10','-pix_fmt','yuv420p',str(video)],check=True)
 config={'browser':{'browserName':'chromium','isolated':True,'launchOptions':{'channel':'chrome','args':['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream','--use-file-for-fake-video-capture='+str(video)]},'contextOptions':{'viewport':{'width':1440,'height':1000}}}}

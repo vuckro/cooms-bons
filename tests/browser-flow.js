@@ -4,7 +4,7 @@ async (page, fixture) => {
     dialog.type() === "beforeunload" ? dialog.accept() : dialog.dismiss(),
   );
   const base = fixture.base;
-  const captures = "../output/playwright/";
+  const captures = "output/browser/";
   const checks = [];
   const assert = (ok, name) => {
     if (!ok) throw new Error(name);
