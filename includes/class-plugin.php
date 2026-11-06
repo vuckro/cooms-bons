@@ -32,7 +32,7 @@ final class Plugin {
         add_action('load-toplevel_page_cooms-bons', static function () {
             if (!current_user_can(Store::MANAGE)) { wp_safe_redirect(Scanner::url()); exit; }
         });
-        add_submenu_page('cooms-bons', 'Aide boutique', 'Aide boutique', Store::REDEEM, 'cooms-bons-help', [$this, 'admin']);
+        add_submenu_page('cooms-bons', 'Aide', 'Aide', Store::REDEEM, 'cooms-bons-help', [$this, 'admin']);
     }
 
     public function assets(): void {
