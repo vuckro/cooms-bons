@@ -1,0 +1,5 @@
+Open Sans (vendor/endroid/qr-code/assets/open_sans.ttf)
+Digitized data copyright © 2010-2011, Google Corporation.
+Licensed under the Apache License, Version 2.0 (see APACHE-2.0.txt).
+The font is used locally for exported vouchers. No remote font request is made.
+The unused 16 MB Noto Sans asset of the QR library is omitted from the installable archive.

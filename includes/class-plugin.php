@@ -1,0 +1,136 @@
+<?php
+namespace Cooms\Bons;
+defined('ABSPATH') || exit;
+
+final class Plugin {
+    public function boot(): void {
+        add_action('admin_menu', [$this, 'menu']);
+        add_action('admin_enqueue_scripts', [$this, 'assets']);
+        add_action('admin_post_cooms_create', [$this, 'create']);
+        add_action('admin_post_cooms_export', [$this, 'export']);
+        add_action('template_redirect', [$this, 'scan'], -100);
+    }
+
+    public function menu(): void {
+        add_menu_page('COOMS Bons', 'COOMS Bons', Store::REDEEM, 'cooms-bons', [$this, 'admin'], 'dashicons-tickets-alt', 57);
+        if (current_user_can(Store::MANAGE)) {
+            add_submenu_page('cooms-bons', 'Tous les bons', 'Tous les bons', Store::MANAGE, 'cooms-bons', [$this, 'admin']);
+            add_submenu_page('cooms-bons', 'Nouveau lot', 'Nouveau lot', Store::MANAGE, 'cooms-bons-new', [$this, 'admin']);
+        }
+        add_submenu_page('cooms-bons', 'Aide boutique', 'Aide boutique', Store::REDEEM, 'cooms-bons-help', [$this, 'admin']);
+    }
+
+    public function assets(): void {
+        $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+        if (!in_array($page, ['cooms-bons', 'cooms-bons-new', 'cooms-bons-help'], true)) { return; }
+        wp_enqueue_style('cooms-bons', plugins_url('assets/cooms.css', COOMS_BONS_FILE), [], COOMS_BONS_VERSION);
+        wp_enqueue_script('cooms-bons', plugins_url('assets/cooms.js', COOMS_BONS_FILE), [], COOMS_BONS_VERSION, true);
+    }
+
+    public function admin(): void {
+        if (!current_user_can(Store::REDEEM)) { wp_die('Accès réservé à l’équipe COOMS.', '', ['response' => 403]); }
+        $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+        if (!current_user_can(Store::MANAGE) || $page === 'cooms-bons-help') {
+            require dirname(COOMS_BONS_FILE) . '/templates/help.php';
+            return;
+        }
+        if ($page === 'cooms-bons-new') {
+            $error = '';
+            $name = ''; $quantity = 25; $key = bin2hex(random_bytes(32));
+            require dirname(COOMS_BONS_FILE) . '/templates/new.php';
+            return;
+        }
+        $lot_id = isset($_GET['lot']) ? absint($_GET['lot']) : 0;
+        $status = isset($_GET['status']) ? sanitize_key(wp_unslash($_GET['status'])) : '';
+        if (!in_array($status, ['available', 'used', 'expired'], true)) { $status = ''; }
+        $page_num = max(1, isset($_GET['paged']) ? absint($_GET['paged']) : 1);
+        $counts = Store::counts($lot_id);
+        $total = $status ? $counts[$status] : $counts['total'];
+        $page_num = min($page_num, max(1, (int) ceil($total / 30)));
+        $rows = Store::bons($lot_id, $status, 30, ($page_num - 1) * 30);
+        $lots = Store::lots();
+        $lot = $lot_id ? Store::lot($lot_id) : null;
+        require dirname(COOMS_BONS_FILE) . '/templates/admin.php';
+    }
+
+    public function create(): void {
+        if (!current_user_can(Store::MANAGE)) { wp_die('Vous ne pouvez pas créer de lots.', '', ['response' => 403]); }
+        check_admin_referer('cooms_create');
+        $name = isset($_POST['name']) && is_string($_POST['name']) ? sanitize_text_field(wp_unslash($_POST['name'])) : '';
+        $quantity = isset($_POST['quantity']) && is_scalar($_POST['quantity']) ? filter_var(wp_unslash($_POST['quantity']), FILTER_VALIDATE_INT) : 0;
+        $key = isset($_POST['request_key']) && is_string($_POST['request_key']) ? sanitize_text_field(wp_unslash($_POST['request_key'])) : '';
+        $id = Store::create_lot($name, (int) $quantity, $key);
+        if (is_wp_error($id)) {
+            $error = $id->get_error_message();
+            if (!preg_match('/^[a-f0-9]{64}$/D', $key)) { $key = bin2hex(random_bytes(32)); }
+            wp_die(esc_html($error) . ' <a href="' . esc_url(admin_url('admin.php?page=cooms-bons-new')) . '">Revenir au formulaire</a>', 'Création impossible', ['response' => 400, 'back_link' => true]);
+        }
+        wp_safe_redirect(add_query_arg(['page' => 'cooms-bons', 'lot' => $id, 'created' => 1], admin_url('admin.php')));
+        exit;
+    }
+
+    public static function export_url(string $format, int $lot = 0, string $status = ''): string {
+        return wp_nonce_url(add_query_arg(['action' => 'cooms_export', 'format' => $format, 'lot' => $lot, 'status' => $status], admin_url('admin-post.php')), 'cooms_export');
+    }
+
+    public function export(): void {
+        if (!current_user_can(Store::MANAGE)) { wp_die('Vous ne pouvez pas exporter les bons.', '', ['response' => 403]); }
+        check_admin_referer('cooms_export');
+        $lot = isset($_GET['lot']) ? absint($_GET['lot']) : 0;
+        $format = isset($_GET['format']) ? sanitize_key(wp_unslash($_GET['format'])) : '';
+        $status = isset($_GET['status']) ? sanitize_key(wp_unslash($_GET['status'])) : '';
+        if (!in_array($status, ['', 'used', 'available', 'expired'], true)) { wp_die('Filtre invalide.', '', ['response' => 400]); }
+        if ($lot && !Store::lot($lot)) { wp_die('Lot introuvable.', '', ['response' => 404]); }
+        if ($format === 'zip' && $lot) { Export::zip($lot); }
+        if ($format === 'csv') { Export::csv($lot, $status); }
+        wp_die('Format invalide.', '', ['response' => 400]);
+    }
+
+    public function scan(): void {
+        if (!isset($_GET['cooms_bon'])) { return; }
+        if (!defined('DONOTCACHEPAGE')) { define('DONOTCACHEPAGE', true); }
+        nocache_headers();
+        header('X-Robots-Tag: noindex, nofollow, noarchive');
+        header('Referrer-Policy: no-referrer');
+        header('X-Content-Type-Options: nosniff');
+        header('X-Frame-Options: SAMEORIGIN');
+        $token = is_string($_GET['cooms_bon']) ? wp_unslash($_GET['cooms_bon']) : '';
+        $bon = null; $state = 'login'; $message = '';
+        if (is_user_logged_in()) {
+            if (!current_user_can(Store::REDEEM)) {
+                $state = 'forbidden'; status_header(403);
+            } else {
+                $bon = Store::find($token);
+                $state = $bon ? Store::status($bon) : 'missing';
+                if (!$bon) { status_header(404); }
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $nonce = isset($_POST['_wpnonce']) && is_string($_POST['_wpnonce']) ? wp_unslash($_POST['_wpnonce']) : '';
+                    if (!wp_verify_nonce($nonce, 'cooms_redeem_' . $token)) {
+                        $message = 'Votre session de confirmation a expiré. Actualisez la page avant de recommencer.';
+                        status_header(403);
+                    } else {
+                        $result = Store::redeem($token);
+                        if ($result['result'] === 'error') {
+                            $message = 'La remise n’a pas pu être confirmée. Actualisez le statut avant de remettre la boîte.';
+                            status_header(503);
+                        } elseif ($result['result'] === 'success') {
+                            // Post/Redirect/Get: refreshing never resubmits a withdrawal.
+                            $notice = wp_create_nonce('cooms_receipt_' . $token . '_' . $result['bon']->redeemed_at);
+                            wp_safe_redirect(add_query_arg(['cooms_bon' => $token, 'receipt' => $notice], home_url('/')), 303);
+                            exit;
+                        } else {
+                            $bon = $result['bon'];
+                            $state = $bon ? Store::status($bon) : 'missing';
+                        }
+                    }
+                }
+                $receipt = isset($_GET['receipt']) && is_string($_GET['receipt']) ? wp_unslash($_GET['receipt']) : '';
+                if ($bon && $bon->redeemed_at && (int) $bon->redeemed_by === get_current_user_id() && wp_verify_nonce($receipt, 'cooms_receipt_' . $token . '_' . $bon->redeemed_at)) {
+                    $state = 'success';
+                }
+            }
+        }
+        require dirname(COOMS_BONS_FILE) . '/templates/scan.php';
+        exit;
+    }
+}

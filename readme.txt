@@ -1,0 +1,28 @@
+=== COOMS Bons ===
+Contributors: vuckro
+Tags: qr-code, gift-vouchers
+Requires at least: 6.4
+Tested up to: 7.1
+Requires PHP: 8.1
+Stable tag: 1.0.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Bons anonymes par lots, QR codes PNG et validation sécurisée en boutique COOMS.
+
+== Description ==
+Génération de lots, expiration à six mois calendaires, export ZIP PNG, rôle vendeur, validation à usage unique, suivi et export CSV. Aucun service externe, paiement ni envoi d’e-mail.
+
+== Installation ==
+Téléverser le ZIP de release avec ses dépendances et activer. Nécessite GD/FreeType, ZIP et InnoDB. Lire README.md et configurer les exclusions de cache avant utilisation réelle.
+
+== Frequently Asked Questions ==
+= Le scan utilise-t-il le bon ? =
+Non. Seule la confirmation explicite d’un vendeur autorisé enregistre la remise.
+
+= La désinstallation efface-t-elle les bons ? =
+Non. Les données sont conservées pour préserver le rapprochement des retraits.
+
+== Changelog ==
+= 1.0.0 =
+Première version : lots anonymes, ZIP PNG, suivi CSV et retraits sécurisés.

@@ -1,0 +1,70 @@
+name: Plugin checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.3', '8.4']
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: local_test_only
+          MARIADB_DATABASE: cooms_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: gd, zip, iconv, mysqli, mbstring
+          tools: composer, wp-cli
+          coverage: none
+      - run: composer validate --strict --no-check-publish
+      - run: composer install --no-dev --prefer-dist --no-interaction
+      - name: PHP and JavaScript syntax
+        run: |
+          find . -path ./vendor -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
+          node --check assets/cooms.js
+      - name: Install isolated WordPress
+        run: |
+          mkdir /tmp/cooms-wordpress
+          wp core download --path=/tmp/cooms-wordpress
+          wp config create --path=/tmp/cooms-wordpress --dbname=cooms_test --dbuser=root --dbpass=local_test_only --dbhost=127.0.0.1:3306
+          wp config set WP_ENVIRONMENT_TYPE local --path=/tmp/cooms-wordpress
+          wp core install --path=/tmp/cooms-wordpress --url=http://localhost --title=Recette --admin_user=admin --admin_password=ci_test_only_password --admin_email=test@example.invalid --skip-email
+          ln -s "$GITHUB_WORKSPACE" /tmp/cooms-wordpress/wp-content/plugins/cooms-bons
+          wp plugin activate cooms-bons --path=/tmp/cooms-wordpress
+          wp eval-file "$GITHUB_WORKSPACE/tests/integration.php" --path=/tmp/cooms-wordpress
+      - name: HTTP and concurrency checks
+        run: |
+          wp option update home http://127.0.0.1:8099 --path=/tmp/cooms-wordpress
+          wp option update siteurl http://127.0.0.1:8099 --path=/tmp/cooms-wordpress
+          wp eval-file "$GITHUB_WORKSPACE/tests/prepare-http.php" --path=/tmp/cooms-wordpress
+          PHP_CLI_SERVER_WORKERS=6 php -S 127.0.0.1:8099 -t /tmp/cooms-wordpress > /tmp/cooms-http.log 2>&1 &
+          for attempt in $(seq 1 20); do curl --silent --fail http://127.0.0.1:8099/wp-login.php > /dev/null && break; sleep 1; done
+          python3 tests/http_checks.py
+      - name: Remove disposable HTTP fixtures
+        if: always()
+        run: |
+          if [ -f /tmp/cooms-wordpress/wp-config.php ]; then
+            wp eval-file "$GITHUB_WORKSPACE/tests/cleanup-http.php" --path=/tmp/cooms-wordpress
+          fi
+      - name: Build installable ZIP
+        run: python3 tools/build.py
+      - name: Verify the actual installable archive
+        run: |
+          test -L /tmp/cooms-wordpress/wp-content/plugins/cooms-bons
+          unlink /tmp/cooms-wordpress/wp-content/plugins/cooms-bons
+          wp plugin install "$GITHUB_WORKSPACE/dist/cooms-bons-1.0.0.zip" --activate --path=/tmp/cooms-wordpress
+          wp eval-file "$GITHUB_WORKSPACE/tests/integration.php" --path=/tmp/cooms-wordpress
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cooms-bons-php-${{ matrix.php }}
+          path: dist/cooms-bons-1.0.0.zip

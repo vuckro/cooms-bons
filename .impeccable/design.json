@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-06T19:55:43.661454+00:00",
+  "title": "Design System: COOMS Bons",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Papier"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Encre"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Encre secondaire"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Trait"
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Rouge COOMS"
+      },
+      "link": {
+        "role": "primary",
+        "displayName": "Rouge profond"
+      },
+      "green": {
+        "role": "secondary",
+        "displayName": "Vert boutique"
+      },
+      "green-bg": {
+        "role": "secondary",
+        "displayName": "Fond disponible"
+      },
+      "redeem-hover": {
+        "role": "secondary",
+        "displayName": "Vert au survol"
+      },
+      "red": {
+        "role": "tertiary",
+        "displayName": "Rouge indisponible"
+      },
+      "red-bg": {
+        "role": "tertiary",
+        "displayName": "Fond indisponible"
+      },
+      "amber": {
+        "role": "tertiary",
+        "displayName": "Ambre expiration"
+      },
+      "amber-bg": {
+        "role": "tertiary",
+        "displayName": "Fond expiré"
+      }
+    },
+    "typographyMeta": {
+      "headline-admin": {
+        "displayName": "Headline admin",
+        "purpose": "Titre de gestion, 24px à 600px et moins."
+      },
+      "headline-scan": {
+        "displayName": "Headline scan",
+        "purpose": "Verdict boutique, 28px à 600px et moins."
+      },
+      "title-admin": {
+        "displayName": "Title admin",
+        "purpose": "Sections de gestion."
+      },
+      "title-gift": {
+        "displayName": "Title gift",
+        "purpose": "Désignation du cadeau."
+      },
+      "body-admin": {
+        "displayName": "Body admin",
+        "purpose": "Gestion et formulaires."
+      },
+      "body-scan": {
+        "displayName": "Body scan",
+        "purpose": "Lecture boutique."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Contrôles explicites."
+      },
+      "table": {
+        "displayName": "Table",
+        "purpose": "Tableaux et aides compactes."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "confirmation",
+        "value": "cb-confirm .25s ease-out",
+        "purpose": "Pictogramme de réussite uniquement ; scale(.85) vers scale(1), sous prefers-reduced-motion:no-preference."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "single-column",
+        "value": "1000px"
+      },
+      {
+        "name": "compact",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Action principale",
+      "kind": "button",
+      "description": "Créer un lot depuis la gestion.",
+      "html": "<button class=\"ds-button\">Créer le lot</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:6px;background:var(--cb-accent,#bc3022);color:var(--cb-surface,#fff);font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;cursor:pointer;text-decoration:none;white-space:normal}.ds-button:hover{background:var(--cb-link,#9f271b)}.ds-button:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-button:disabled{opacity:.65;cursor:wait}",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Action secondaire",
+      "kind": "button",
+      "description": "Action complémentaire sur surface blanche.",
+      "html": "<button class=\"ds-button ds-secondary\">Télécharger le ZIP</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:6px;background:var(--cb-accent,#bc3022);color:var(--cb-surface,#fff);font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;cursor:pointer;text-decoration:none;white-space:normal}.ds-button:hover{background:var(--cb-link,#9f271b)}.ds-button:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-button:disabled{opacity:.65;cursor:wait}.ds-secondary{background:var(--cb-surface,#fff);color:var(--cb-ink,#30251f);border-color:var(--cb-border,#ded6cc)}.ds-secondary:hover{background:var(--cb-paper,#fbf8f2);border-color:var(--cb-ink,#30251f)}",
+      "refersTo": "button-secondary"
+    },
+    {
+      "name": "Confirmation de remise",
+      "kind": "button",
+      "description": "Une action pleine largeur sur le ticket disponible.",
+      "html": "<button class=\"ds-button ds-redeem\">Valider la remise de la boîte</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:6px;background:var(--cb-accent,#bc3022);color:var(--cb-surface,#fff);font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;cursor:pointer;text-decoration:none;white-space:normal}.ds-button:hover{background:var(--cb-link,#9f271b)}.ds-button:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-button:disabled{opacity:.65;cursor:wait}.ds-redeem{width:100%;min-height:56px;font-size:16px;background:var(--cb-green,#16643b)}.ds-redeem:hover{background:#104d2d}",
+      "refersTo": "button-redeem"
+    },
+    {
+      "name": "Champ de lot",
+      "kind": "input",
+      "description": "Libellé et aide autour d’un champ natif.",
+      "html": "<label class=\"ds-label\" for=\"ds-lot\">Nom du lot</label><input class=\"ds-input\" id=\"ds-lot\" value=\"Fondation — Semaine 46\"><p class=\"ds-help\">Un nom reconnaissable pour retrouver les retraits et les exports.</p>",
+      "css": ".ds-label{display:block;margin-bottom:6px;font:600 14px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;color:var(--cb-ink,#30251f)}.ds-input{min-height:44px;width:100%;padding:8px 12px;border:1px solid var(--cb-border,#ded6cc);border-radius:6px;background:var(--cb-surface,#fff);color:var(--cb-ink,#30251f);font:14px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-input:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-help{margin:6px 0 0;font:13px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;color:var(--cb-muted,#665b51)}",
+      "refersTo": "input"
+    },
+    {
+      "name": "Statuts",
+      "kind": "chip",
+      "description": "États écrits avec une couleur complémentaire.",
+      "html": "<span class=\"ds-status\">Disponible</span> <span class=\"ds-status ds-used\">Utilisé</span> <span class=\"ds-status ds-expired\">Expiré</span>",
+      "css": ".ds-status{display:inline-flex;padding:3px 10px;border-radius:99px;background:var(--cb-green-bg,#eaf5ee);color:var(--cb-green,#16643b);font:600 13px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;white-space:nowrap}.ds-used{background:var(--cb-red-bg,#fbeeed);color:var(--cb-red,#9e2828)}.ds-expired{background:var(--cb-amber-bg,#fff4db);color:var(--cb-amber,#805000)}",
+      "refersTo": "status-available"
+    },
+    {
+      "name": "Panneau de formulaire",
+      "kind": "card",
+      "description": "Surface de travail bordée sans ombre.",
+      "html": "<section class=\"ds-panel\"><h2>Préparer le lot</h2><p>Des bons anonymes, prêts à transmettre à la Fondation.</p></section>",
+      "css": ".ds-panel{padding:28px;border:1px solid var(--cb-border,#ded6cc);border-radius:12px;background:var(--cb-surface,#fff);color:var(--cb-ink,#30251f);font:14px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-panel h2{margin:0 0 24px;font-size:19px;line-height:1.4}.ds-panel p{margin:0;color:var(--cb-muted,#665b51)}",
+      "refersTo": "panel"
+    },
+    {
+      "name": "Pagination",
+      "kind": "nav",
+      "description": "Liens simples, page courante explicite et retour à la ligne.",
+      "html": "<nav class=\"ds-pagination\" aria-label=\"Pagination\"><span class=\"ds-current\" aria-current=\"page\">1</span><a href=\"#page-2\">2</a><a href=\"#page-2\">Suivant</a></nav>",
+      "css": ".ds-pagination{display:flex;flex-wrap:wrap;gap:8px;font:14px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-pagination a,.ds-current{padding:5px 10px;border-radius:4px}.ds-pagination a{color:var(--cb-link,#9f271b);text-underline-offset:3px}.ds-pagination a:hover{text-decoration-thickness:2px}.ds-pagination a:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-current{background:var(--cb-ink,#30251f);color:var(--cb-surface,#fff)}"
+    },
+    {
+      "name": "Ticket de boutique",
+      "kind": "custom",
+      "description": "Verdict et cadeau regroupés dans une surface indépendante du thème.",
+      "html": "<article class=\"ds-ticket\"><header class=\"ds-verdict\"><svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"16\" cy=\"16\" r=\"13\" stroke=\"currentColor\" stroke-width=\"2.5\"/><path d=\"m9 16 4.5 4.5L23 11\" stroke=\"currentColor\" stroke-width=\"2.5\"/></svg><h1>Bon valide</h1><p>Cette boîte peut être remise après votre confirmation.</p></header><section class=\"ds-gift\"><h2>Une boîte de 4 cookies</h2><p>Valeur 20 CHF · Retrait en boutique</p></section></article>",
+      "css": ".ds-ticket{max-width:520px;border:1px solid var(--cb-border,#ded6cc);border-radius:16px;overflow:hidden;background:var(--cb-surface,#fff);color:var(--cb-ink,#30251f);font:16px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-verdict{padding:28px;background:var(--cb-green-bg,#eaf5ee);color:var(--cb-green,#16643b)}.ds-verdict svg{display:block;margin-bottom:16px}.ds-verdict h1{margin:0 0 12px;font-size:30px;line-height:1.2;letter-spacing:-.02em}.ds-verdict p{margin:0;max-width:44ch}.ds-gift{padding:28px}.ds-gift h2{margin:0 0 8px;font-size:22px;line-height:1.3}.ds-gift p{margin:0;color:var(--cb-muted,#665b51);font-size:14px}@media(max-width:600px){.ds-verdict,.ds-gift{padding:24px}.ds-verdict h1{font-size:28px}}",
+      "refersTo": "ticket"
+    }
+  ],
+  "narrative": {
+    "northStar": "Le registre de boutique",
+    "overview": "Une interface calme, précise et familière, issue de la clarté des éditions suisses de recettes. Le papier crème, l’encre brune et la répétition des alignements donnent une présence COOMS sans détourner l’attention des actions. La gestion conserve le cadre WordPress ; l’écran de remise a sa propre mise en page, indépendante du thème.\n\nLe système privilégie une lecture immédiate, des contrôles natifs et des états écrits en français. Il ne requiert ni image décorative ni police externe. La simplicité et le fonctionnement prévisible guident les choix.",
+    "keyCharacteristics": [
+      "Hiérarchie courte et espace utile.",
+      "Accent rouge pour les actions de gestion, vert pour la remise disponible.",
+      "Surfaces plates, bordures discrètes et chiffres tabulaires.",
+      "Statuts formulés en toutes lettres et confirmation explicite."
+    ],
+    "rules": [
+      {
+        "name": "The Written State Rule",
+        "body": "Un état est toujours nommé ; la couleur seule ne porte jamais sa signification.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat Surface Rule",
+        "body": "La profondeur provient du contraste des surfaces et des séparateurs.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do conserver les contrôles familiers et les libellés explicites en français.",
+      "Do associer chaque état à un texte, même avec un pictogramme.",
+      "Do préserver les chiffres tabulaires, le focus visible et le défilement local des tableaux.",
+      "Do réserver le vert de l’action de boutique à la remise et sa confirmation."
+    ],
+    "donts": [
+      "Don’t ajouter d’emoji de statut, d’ombre décorative ou de dépendance à une police externe.",
+      "Don’t confondre le rouge de marque et une erreur sans libellé explicite.",
+      "Don’t montrer une réussite avant la réponse de confirmation du serveur.",
+      "Don’t faire dépendre la présentation boutique du thème ou d’AdminKit."
+    ]
+  }
+}
