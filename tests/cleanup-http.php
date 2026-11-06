@@ -20,6 +20,11 @@ foreach ($owned as $item) {
     }
 }
 require_once ABSPATH . 'wp-admin/includes/user.php';
+foreach ($f['staff_accounts'] ?? [] as $email) {
+    if (!preg_match('/^cooms-staff-http-[a-f0-9]{16}@example\.invalid$/D', $email)) { throw new RuntimeException('Unexpected staff fixture.'); }
+    $user = get_user_by('email', $email);
+    if ($user && get_user_meta($user->ID, \Cooms\Bons\Staff::META, true) === '1') { wp_delete_user($user->ID); }
+}
 foreach ($f['accounts'] as $account) {
     $user = get_user_by('id', $account['id']);
     if ($user && $user->user_login === $account['login'] && strpos($user->user_login, 'cooms-http-') === 0) { wp_delete_user($user->ID); }

@@ -37,7 +37,7 @@ final class Plugin {
 
     public function assets(): void {
         $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
-        if (!in_array($page, ['cooms-bons', 'cooms-bons-new', 'cooms-bons-help'], true)) { return; }
+        if (!in_array($page, ['cooms-bons', 'cooms-bons-new', 'cooms-bons-help', 'cooms-bons-staff'], true)) { return; }
         wp_enqueue_style('cooms-bons', plugins_url('assets/cooms.css', COOMS_BONS_FILE), [], COOMS_BONS_VERSION);
         // Optional host bridge: never make the standalone plugin depend on AdminKit.
         $design_deps = ['cooms-bons'];

@@ -40,6 +40,21 @@
     gift.addEventListener("input", updatePreview);
     date.addEventListener("input", updatePreview);
   }
+  var copyScanner = document.querySelector('[data-copy-scanner]');
+  if (copyScanner) {
+    copyScanner.addEventListener('click', async function () {
+      var link = document.querySelector('#cb-scanner-link');
+      var feedback = document.querySelector('[data-copy-feedback]');
+      try {
+        await navigator.clipboard.writeText(link.value);
+        feedback.textContent = 'Lien copié. Vous pouvez le transmettre à l’employé.';
+      } catch (error) {
+        link.focus();
+        link.select();
+        feedback.textContent = 'Lien sélectionné. Utilisez la commande Copier de votre appareil.';
+      }
+    });
+  }
   window.addEventListener("pageshow", function (event) {
     if (event.persisted) {
       window.location.reload();

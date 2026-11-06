@@ -245,3 +245,10 @@ Le formulaire présente nom, quantité, cadeau et date de fin de validité. Les 
 ### Intégration AdminKit (1.2.1)
 
 Le pont est chargé après les feuilles AdminKit déjà en file, sans dépendance obligatoire au plugin hôte. Les boutons utilisent `--ak-primary`, `--ak-on-accent` et leurs états de survol ; les secondaires utilisent `--ak-btn-*`. Le focus suit le double anneau `--ak-focus-ring`. Les champs suivent `--ak-input-bg` / `--ak-input-border`, les polices `--ak-font-body` / `--ak-font-mono`, les rayons `--ak-radius-*`. Densité native de 32px par défaut sur bureau (`--ak-control-height`), cible tactile d’au moins 44px sous 783px (`--ak-control-height-touch`). La taille de saisie mobile reste au moins 16px. Les statuts utilisent leurs rôles texte et fond sémantiques, et « Retiré » reste neutre. Le thème sombre applique aussi `color-scheme: dark` aux contrôles natifs. Les valeurs du frontmatter décrivent le secours sans AdminKit.
+
+
+### Accès employés (1.3)
+
+Surface Operate réservée aux responsables ayant les capacités WordPress de gestion des comptes. Une liste affiche le nom, l’e-mail, l’état écrit Actif/Suspendu et une action réversible. En dessous, le formulaire ne demande que nom/e-mail : aucun choix de rôle. L’invitation native est une case explicite, activée par défaut. Une aide explique le lien du scanner et la reprise sans réception d’e-mail. La copie du lien annonce sa réussite ou sélectionne le texte en secours. Les messages serveur utilisent un feedback privé par utilisateur puis une redirection303 ; les erreurs conservent nom/e-mail. Les composants et le pont AdminKit existants s’appliquent à cette surface ; les champs e-mail suivent la même densité et le même focus.
+
+Sur mobile, les lignes employés se replient avec nom/e-mail, état puis actions visibles, sans devoir faire défiler le tableau horizontalement. Les cases d’invitation restent des contrôles natifs de l’hôte ; seuls les champs texte/nombre/date/e-mail reçoivent la densité des champs.
