@@ -75,6 +75,9 @@ final class Store {
 
     /** End of the selected inclusive Geneva day, stored as exclusive UTC midnight. */
     public static function selected_expiry(string $day) {
+        if (!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/D', $day)) {
+            return new \WP_Error('invalid_expiry', 'Choisissez une date de fin de validité à partir d’aujourd’hui.');
+        }
         $zone = new \DateTimeZone('Europe/Zurich');
         $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $day, $zone);
         if (!$date || $date->format('Y-m-d') !== $day || $day > '9999-12-30' || $day < (new \DateTimeImmutable('now', $zone))->format('Y-m-d')) {

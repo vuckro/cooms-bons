@@ -39,7 +39,7 @@ try {
     $check($custom_bons[0]->expires_at === Store::lot($custom)->expires_at, 'Lot and every bon share exact expiry');
     $check(is_wp_error(Store::create_lot('Invalid gift', 1, bin2hex(random_bytes(32)), '', $future)), 'Empty gift refused');
     $check(is_wp_error(Store::create_lot('Invalid gift', 1, bin2hex(random_bytes(32)), str_repeat('A',191), $future)), 'Oversize gift refused');
-    foreach (['2020-01-01', '2027-02-30', '2027-02-29', '', 'not-a-date', '9999-12-31'] as $bad_date) {
+    foreach (['2020-01-01', '2027-02-30', '2027-02-29', '', 'not-a-date', '9999-12-31', "2027-02-28\0"] as $bad_date) {
         $check(is_wp_error(Store::create_lot('Invalid expiry', 1, bin2hex(random_bytes(32)), 'Cadeau', $bad_date)), 'Reject date '.$bad_date);
     }
     $year = (int) gmdate('Y') + 1;

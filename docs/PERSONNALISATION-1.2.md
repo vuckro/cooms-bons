@@ -6,4 +6,4 @@ L’intitulé (texte simple,1–190caractères) est enregistré dans le lot. Il 
 
 Les bons déjà créés conservent leurs caractéristiques. Aucun changement de schéma, de token, d’URL ou de règles d’usage unique. Cette évolution ne crée ni paiement ni réservation en ligne.
 
-Recette locale :64 contrôles métier dont cadeau/date personnalisés, limites de saisie, dates impossibles, changements d’heure et PNG long ;42 contrôles HTTP dont création réelle, restauration après erreur, CSV et fiche vendeur personnalisée. Aperçu et responsive contrôlés dans Chromium. Les autres contrôles sont exécutés dans la matrice GitHub ; état à vérifier dans le dépôt.
+Recette locale :65 contrôles métier dont cadeau/date personnalisés, limites de saisie, dates impossibles, changements d’heure et PNG long ;42 contrôles HTTP dont création réelle, restauration après erreur, CSV et fiche vendeur personnalisée. Aperçu et responsive contrôlés dans Chromium. Les autres contrôles sont exécutés dans la matrice GitHub ; état à vérifier dans le dépôt.
