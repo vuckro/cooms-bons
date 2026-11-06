@@ -337,6 +337,24 @@
       "desktopControl": "--ak-control-height",
       "touchControl": "--ak-control-height-touch below 783px",
       "fallback": "cooms.css standalone; boutique isolated"
+    },
+    "staffAccess": {
+      "mode": "operate",
+      "route": "cooms-bons-staff",
+      "nativeAccounts": true,
+      "fields": [
+        "name",
+        "email",
+        "optional native invitation"
+      ],
+      "states": [
+        "active",
+        "suspended",
+        "error",
+        "empty"
+      ],
+      "copyFallback": "select readonly scanner link",
+      "theme": "existing AdminKit bridge"
     }
   },
   "components": [

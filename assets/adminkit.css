@@ -83,7 +83,7 @@ body.adminkit .cb-app .cb-button:disabled {
   color: var(--ak-text-disabled, var(--cb-muted));
   box-shadow: none;
 }
-body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"]),
+body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]),
 body.adminkit .cb-app .cb-work .cb-filters select {
   min-height: var(--ak-control-height, 32px);
   padding-block: var(--ak-space-xs, 4px);
@@ -112,7 +112,7 @@ body.adminkit .cb-app { color-scheme: light; }
 :root[data-adminkit-theme="dark"] body.adminkit .cb-app { color-scheme: dark; }
 @media (max-width: 782px) {
   body.adminkit .cb-app .cb-button,
-  body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"]),
+  body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]),
   body.adminkit .cb-app .cb-work .cb-filters select {
     min-height: var(--ak-control-height-touch, 44px);
     font-size: max(16px, var(--ak-text-m, 14px));

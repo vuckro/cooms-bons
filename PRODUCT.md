@@ -17,7 +17,7 @@ Un cadeau défini par lot contre un bon anonyme à usage unique en boutique à G
 Compte WordPress vendeur, scanner caméra dans la page boutique (ou caméra native), saisie de référence en secours, navigateur connecté et Internet. Génération par lot, export ZIP PNG individuel, distribution externe, validation explicite, réconciliation CSV. Test WordPress localhost:10033 ; dépôt github.com/vuckro/cooms-bons.
 
 ## Capabilities and Constraints
-Vue Lots et détail des bons, scanner réservé aux vendeurs, recherche de référence, tokens cryptographiques, date limite personnalisable (six mois calendaires proposés) en Europe/Zurich, retrait atomique, suivi et exports privés. Aucun nom/e-mail bénéficiaire. Pas de caisse Lightspeed, WooCommerce, FluentBooking, envoi mail ou mode hors ligne. Livraison prévue le 13 novembre 2026. Tutoriel court prévu.
+Vue Lots et détail des bons, scanner réservé aux vendeurs, recherche de référence, tokens cryptographiques, date limite personnalisable (six mois calendaires proposés) en Europe/Zurich, retrait atomique, suivi et exports privés. Aucun nom/e-mail bénéficiaire. Gestion des accès vendeurs via les comptes WordPress : création, invitation native facultative, suspension/réactivation. Pas de caisse Lightspeed, WooCommerce, FluentBooking, envoi des bons par mail ou mode hors ligne. Livraison prévue le 13 novembre 2026. Tutoriel court prévu.
 
 ## Brand Commitments
 COOMS Bons ; français clair, vocabulaire de boutique. L’utilisateur délègue les choix et demande simplicité, efficacité, fonctionnement prévisible et maintenabilité. La gestion doit s’intégrer à WordPress ; la caisse doit rester indépendante du thème.

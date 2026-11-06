@@ -117,4 +117,43 @@ check(len(custom_rows)==3 and all(row[-1]==custom_gift and row[3]==date.fromisof
 _,body,_=request(scan);lookup_nonce=re.search(r'name="_wpnonce" value="([^"]+)"',body.decode()).group(1)
 _,body,_=request(scan,urllib.parse.urlencode({'code':custom_rows[1][0],'_wpnonce':lookup_nonce}).encode())
 check(custom_gift in body.decode() and 'Valider la remise du cadeau' in body.decode() and 'Une boîte de 4 cookies' not in body.decode(),'Seller lookup displays custom gift without hardcoded box copy')
+# Native employee-account management: never send test invitations.
+cookie=admin_cookie
+staff_page=base+'/wp-admin/admin.php?page=cooms-bons-staff'
+code,body,_=request(staff_page);s=body.decode()
+check(code==200 and 'Accès employés' in s and 'Créer l’accès vendeur' in s,'Administrator sees employee management')
+staff_nonce=re.search(r'name="_wpnonce" value="([^"]+)"',s).group(1)
+for label in ['seller','subscriber']:
+ cookie='; '.join(c['name']+'='+c['value'] for c in fixture['accounts'][label]['cookies'])
+ check(request(staff_page)[0]==403,label+' cannot open employee management')
+ check(request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode({'action':'cooms_staff','operation':'create','_wpnonce':staff_nonce,'staff_name':'Forbidden','staff_email':'forbidden@example.invalid'}).encode())[0]==403,label+' cannot submit employee mutations')
+cookie=admin_cookie
+check(request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode({'action':'cooms_staff','operation':'create','_wpnonce':'invalid'}).encode())[0]==403,'Employee mutation requires valid nonce')
+import secrets
+staff_email='cooms-staff-http-'+secrets.token_hex(8)+'@example.invalid'
+fixture.setdefault('staff_accounts',[]).append(staff_email)
+(root/'output/http-fixture.json').write_text(json.dumps(fixture))
+def staff_post(operation,**values):
+ return request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode({'action':'cooms_staff','operation':operation,'_wpnonce':staff_nonce,**values}).encode())
+code,body,_=staff_post('create',staff_name='RECETTE employé HTTP',staff_email=staff_email,role='administrator')
+s=body.decode()
+check(code==200 and 'Accès vendeur créé.' in s and staff_email in s,'Real form creates employee with forced seller role')
+row=next(r for r in re.findall(r'<tr>.*?</tr>',s,re.S) if staff_email in r)
+staff_id=int(re.search(r'name="staff_id" value="(\d+)"',row).group(1))
+check('Actif' in row and 'Suspendre l’accès' in row,'New employee listed as active')
+code,body,_=staff_post('create',staff_name='Duplicate',staff_email=staff_email)
+check(code==200 and 'Un compte utilise déjà cet e-mail' in body.decode(),'Duplicate email returns useful error without changing account')
+code,body,_=staff_post('suspend',staff_id=fixture['accounts']['admin']['id'])
+check(code==200 and 'ne peut pas être modifié' in body.decode(),'Cannot suspend administrator through employee endpoint')
+code,body,_=staff_post('suspend',staff_id=staff_id)
+check(code==200 and 'Accès au scanner suspendu' in body.decode(),'Employee suspension succeeds through real POST')
+code,body,_=staff_post('enable',staff_id=staff_id)
+check(code==200 and 'Accès réactivé' in body.decode(),'Employee reactivation succeeds through real POST')
+code,body,_=staff_post('suspend',staff_id=fixture['accounts']['seller']['id'])
+check(code==200 and 'Accès au scanner suspendu' in body.decode(),'Existing dedicated seller may be suspended')
+cookie='; '.join(c['name']+'='+c['value'] for c in fixture['accounts']['seller']['cookies'])
+code,body,_=request(base+'/?cooms_scan=1')
+check('Accès équipe COOMS' in body.decode() and 'data-scanner ' not in body.decode(),'Already authenticated seller session is revoked after suspension')
+cookie=admin_cookie
+staff_post('enable',staff_id=fixture['accounts']['seller']['id'])
 print('SUCCESS:',passed,'HTTP checks',flush=True)

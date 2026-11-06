@@ -3,6 +3,7 @@
 use Cooms\Bons\Store;
 use Cooms\Bons\Export;
 use Cooms\Bons\Scanner;
+use Cooms\Bons\Staff;
 if (wp_get_environment_type() !== 'local') { throw new RuntimeException('Local environment required.'); }
 $passed = 0;
 $check = static function ($ok, string $label) use (&$passed) {
@@ -11,9 +12,52 @@ $check = static function ($ok, string $label) use (&$passed) {
 };
 $original_user = get_current_user_id();
 $lot_ids = []; $user_ids = [];
+$intercept_mail = null;
 try {
     wp_set_current_user(1);
     $check(current_user_can(Store::MANAGE), 'Administrator can manage bons');
+    $check(Staff::can_manage(), 'Administrator can manage staff accounts');
+    $check(is_wp_error(Staff::create('', 'invalid')), 'Invalid employee data refused');
+    $check(is_wp_error(Staff::create('Example', 'invalid')), 'Invalid employee email refused');
+    $staff_email = 'cooms-staff-' . bin2hex(random_bytes(8)) . '@example.invalid';
+    $staff_id = Staff::create('RECETTE accès employé', $staff_email);
+    $check(is_int($staff_id), 'Create dedicated employee account'); $user_ids[] = $staff_id;
+    $staff = get_userdata($staff_id);
+    $test_password = wp_generate_password(40);
+    wp_set_password($test_password, $staff_id);
+    $login = wp_authenticate($staff_email, $test_password);
+    $check($login instanceof WP_User && $login->ID === $staff_id, 'Employee can log in using email and password');
+    $mail = [];
+    $intercept_mail = static function ($return, $attributes) use (&$mail) { $mail[] = $attributes; return true; };
+    add_filter('pre_wp_mail', $intercept_mail, 10, 2);
+    wp_new_user_notification($staff_id, null, 'user');
+    remove_filter('pre_wp_mail', $intercept_mail, 10);
+    $intercept_mail = null;
+    $check(count($mail) === 1 && (array) $mail[0]['to'] === [$staff_email], 'Native invitation targets only employee; test mail intercepted');
+    $check(str_contains($mail[0]['message'], 'action=rp') && !str_contains($mail[0]['message'], $test_password), 'Invitation contains native password setup link, never password');
+    $check($staff->roles === ['cooms_seller'] && user_can($staff, Store::REDEEM), 'Employee receives only seller role');
+    $check(!user_can($staff, Store::MANAGE) && !user_can($staff, 'edit_posts') && !user_can($staff, 'promote_users'), 'Employee cannot manage site, lots or accounts');
+    $check(is_wp_error(Staff::create('Duplicate', $staff_email)), 'Existing email never replaces or changes an account');
+    $sessions = WP_Session_Tokens::get_instance($staff_id);
+    $session = $sessions->create(time() + 3600);
+    $check($sessions->verify($session), 'Employee session fixture exists');
+    $check(Staff::set_access($staff_id, false) === true, 'Suspend employee access');
+    $check(!user_can(get_userdata($staff_id), Store::REDEEM), 'Suspended account cannot redeem');
+    $check(!$sessions->verify($session), 'Suspension invalidates existing sessions');
+    $check(get_userdata($staff_id)->user_email === $staff_email, 'Suspension retains account identity');
+    $check(Staff::set_access($staff_id, true) === true && user_can(get_userdata($staff_id), Store::REDEEM), 'Reactivate dedicated employee');
+    $check(is_wp_error(Staff::set_access(1, false)), 'Cannot suspend own administrator account');
+    $staff->set_role('administrator');
+    $check(is_wp_error(Staff::set_access($staff_id, false)), 'Externally elevated staff account protected from role replacement');
+    $staff->set_role('cooms_seller');
+    $redirect = new Staff();
+    $check($redirect->login_redirect(admin_url(), '', get_userdata($staff_id)) === Scanner::url(), 'Seller default login goes to scanner');
+    $check($redirect->login_redirect(home_url('/?cooms_bon=test'), home_url('/?cooms_bon=test'), get_userdata($staff_id)) === home_url('/?cooms_bon=test'), 'Explicit voucher login destination preserved');
+    wp_set_current_user($staff_id);
+    $check(!Staff::can_manage() && is_wp_error(Staff::create('No', 'no@example.invalid')) && is_wp_error(Staff::set_access($staff_id, false)), 'Seller cannot grant or change employee access');
+    wp_set_current_user(0);
+    $check(is_wp_error(Staff::create('No', 'no@example.invalid')), 'Anonymous account creation refused');
+    wp_set_current_user(1);
     $cases = [
         '2026-11-06 12:00:00' => '06/05/2027',
         '2026-08-31 12:00:00' => '28/02/2027',
@@ -117,6 +161,7 @@ try {
 
     echo "SUCCESS: $passed checks. Fixture lots/users removed below.\n";
 } finally {
+    if ($intercept_mail) { remove_filter('pre_wp_mail', $intercept_mail, 10); }
     global $wpdb;
     foreach ($lot_ids as $id) {
         $wpdb->delete(Store::table('bons'), ['lot_id' => $id]);

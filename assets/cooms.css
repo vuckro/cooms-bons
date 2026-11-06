@@ -756,7 +756,7 @@ body.cb-scan {
   gap: 12px;
 }
 .cb-app .cb-filters select,
-.cb-app .cb-field input {
+.cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]) {
   min-height: 42px;
   border-radius: 8px;
 }
@@ -1175,7 +1175,7 @@ body.cb-scan {
   }
 }
 /* Keep COOMS controls consistent even when a host admin skin restyles inputs. */
-.cb-app .cb-field input:is([type="text"], [type="number"], [type="date"]),
+.cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]),
 .cb-app .cb-work .cb-filters select {
   min-height: 42px;
   padding: 8px 12px;
@@ -1198,7 +1198,7 @@ body.cb-scan {
   align-items: center;
 }
 @media (max-width: 600px) {
-  .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"]),
+  .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]),
   .cb-app .cb-work .cb-filters select {
     min-height: 44px;
     font-size: 16px;
@@ -1228,4 +1228,23 @@ body.cb-scan {
 }
 .cb-heading p {
   overflow-wrap: anywhere;
+}
+
+/* Native-account management, sharing the same components as lot creation. */
+.cb-staff-create { margin-block-start: 32px; }
+.cb-app .cb-field input[type="email"] { width: 100%; }
+.cb-app .cb-check { display: flex; align-items: flex-start; gap: 10px; font-weight: 450; }
+.cb-check input { flex-shrink: 0; margin-block-start: 4px; }
+.cb-staff-profile { align-self: center; font-size: 13px; }
+.cb-app .cb-staff-table tbody th { white-space: normal; overflow-wrap: anywhere; }
+.cb-staff-table th:first-child { min-width: 220px; }
+.cb-staff-table td:last-child { min-width: 280px; }
+#cb-scanner-link { margin-block-end: 12px; }
+
+@media (max-width: 600px) {
+  .cb-staff-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+  .cb-staff-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; padding: 16px; gap: 12px; border-block-start: 1px solid var(--cb-border); }
+  .cb-staff-table :is(th, td) { padding: 0; border: 0; min-width: 0 !important; }
+  .cb-staff-table td:last-child { grid-column: 1 / -1; }
+  .cb-staff-table .cb-actions { align-items: center; gap: 12px; }
 }

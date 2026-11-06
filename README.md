@@ -79,7 +79,7 @@ Voir [la procédure](docs/DEPLOIEMENT.md). La copie locale est une recette, pas 
 
 ## Tests
 
-Sur une **copie locale uniquement** : `wp eval-file tests/integration.php` (65 assertions métier ; crée et retire ses seules données de test). Suite HTTP reproductible sur localhost (42 contrôles supplémentaires) : `wp eval-file tests/prepare-http.php`, puis `python3 tests/http_checks.py`, enfin `wp eval-file tests/cleanup-http.php`, même en cas d’échec. Elle crée ses propres comptes temporaires et lot, vérifie les accès, ZIP, CSV et six validations concurrentes. Le fichier `output/http-fixture.json` contient des cookies éphémères : il est privé, ignoré par Git et supprimé au nettoyage. GitHub Actions exécute ces tests avec PHP 8.1, 8.3 et 8.4. Les captures mobiles/tablettes et le décodage Apple Vision complètent cette suite. Le test Swift optionnel `swift tests/decode-qr.swift chemin/bon.png` vérifie le décodage d’un PNG sous macOS.
+Sur une **copie locale uniquement** : `wp eval-file tests/integration.php` (87 assertions métier ; crée et retire ses seules données de test). Suite HTTP reproductible sur localhost (56 contrôles supplémentaires) : `wp eval-file tests/prepare-http.php`, puis `python3 tests/http_checks.py`, enfin `wp eval-file tests/cleanup-http.php`, même en cas d’échec. Elle crée ses propres comptes temporaires et lot, vérifie les accès, ZIP, CSV et six validations concurrentes. Le fichier `output/http-fixture.json` contient des cookies éphémères : il est privé, ignoré par Git et supprimé au nettoyage. GitHub Actions exécute ces tests avec PHP 8.1, 8.3 et 8.4. Les captures mobiles/tablettes et le décodage Apple Vision complètent cette suite. Le test Swift optionnel `swift tests/decode-qr.swift chemin/bon.png` vérifie le décodage d’un PNG sous macOS.
 
 ## Recette caméra et responsive
 
@@ -95,3 +95,10 @@ Lightspeed, paiements, WooCommerce, FluentBooking, e-mails bénéficiaires, PDF 
 ### Design system AdminKit
 
 COOMS Bons consomme automatiquement les tokens sémantiques AdminKit dans sa gestion : thème clair/sombre, accent configuré, contraste des boutons, Geist/Geist Mono, champs, rayons, statuts et focus. Le pont `assets/adminkit.css` est isolé sous `body.adminkit .cb-app`, chargé seulement sur les pages COOMS et sans dépendance obligatoire. AdminKit conserve la propriété de ses réglages et variables. Sans AdminKit, le plugin garde son design autonome. Le scanner boutique et les images exportées restent indépendants du thème d’administration.
+
+
+### Accès employés
+
+`COOMS Bons → Accès employés` permet aux administrateurs autorisés à créer et promouvoir des comptes de créer un vendeur en renseignant son nom et son e-mail. Le rôle `Vendeur COOMS` est imposé : scan et validation uniquement, sans gestion des lots/exports/comptes. Le mot de passe initial est aléatoire et jamais affiché. La case d’invitation demande à WordPress son e-mail natif de création de mot de passe ; la réception dépend du service mail du site. Sans invitation, le responsable définit un mot de passe dans le profil WordPress. Aucun e-mail n’a été envoyé à de vrais employés pendant les tests.
+
+L’employé se connecte avec son e-mail. Une connexion sans destination explicite aboutit au scanner ; une destination de bon explicite est conservée. Le lien `/?cooms_scan=1` peut être copié et ajouté aux favoris de l’appareil. Suspension : passage du compte vendeur dédié en Abonné, suppression de la capacité de scan directe et invalidation de toutes ses sessions, sans effacer ses retraits. Réactivation : retour au rôle vendeur, nouvelle connexion requise. Les comptes devenus administrateurs ou possédant plusieurs rôles ne sont jamais rétrogradés par cette page. Un e-mail déjà utilisé ne modifie aucun compte : les rôles existants se gèrent dans WordPress.
