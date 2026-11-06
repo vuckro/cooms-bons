@@ -1,6 +1,6 @@
 # COOMS Bons
 
-Plugin WordPress de bons anonymes à usage unique : lots pour la Fondation, QR codes individuels, retrait physique en boutique et réconciliation CSV. Version 1.1.0.
+Plugin WordPress de bons anonymes à usage unique : lots pour la Fondation, QR codes individuels, retrait physique en boutique et réconciliation CSV. Version 1.2.0.
 
 ## Prérequis
 
@@ -36,13 +36,13 @@ WooCommerce bloque habituellement l’administration des comptes sans droits d�
 
 ## Préparer un lot
 
-COOMS Bons → Nouveau lot → saisir le nom et la quantité (1–250) → Créer le lot. Le cadeau est fixe : « Boîte de 4 cookies — 20 CHF ». La quantité limite protège le temps et la mémoire de génération ; créer plusieurs lots pour davantage de bons.
+COOMS Bons → Nouveau lot → saisir le nom et la quantité (1–250) → Créer le lot. Le cadeau et la date limite sont personnalisables pour chaque nouveau lot. Les valeurs proposées sont « Boîte de 4 cookies — 20 CHF » et six mois calendaires. La date est incluse jusqu’à 23 h 59 à Genève. Un lot déjà créé conserve son cadeau et ses dates. La quantité limite protège le temps et la mémoire de génération ; créer plusieurs lots pour davantage de bons.
 
 Le lot est enregistré intégralement dans une transaction. Une soumission répétée du même formulaire renvoie le même lot ; un nouveau formulaire permet de créer volontairement un autre lot, même avec le même nom.
 
 Télécharger le ZIP depuis le détail du lot. Chaque PNG (1000 × 1320) comporte un QR noir sur blanc, la référence, le cadeau et la date de validité. Transmettre le ZIP à la Fondation, qui distribue une image par personne. Un nouveau téléchargement restitue les mêmes bons : aucun renouvellement de validité et aucune duplication.
 
-Six mois **calendaires**, depuis la génération, jusqu’à la fin du jour de destination à Genève ; le jour est ramené à la fin du mois si nécessaire. Un bon du 31 août 2026 est ainsi valable jusqu’au 28 février 2027 inclus. Stockage UTC, affichage Europe/Zurich, limite exclusive au minuit suivant. L’expiration est vérifiée à chaque opération sans cron.
+Par défaut, six mois **calendaires**, depuis la génération, jusqu’à la fin du jour de destination à Genève ; le jour est ramené à la fin du mois si nécessaire. Un bon du 31 août 2026 est ainsi valable jusqu’au 28 février 2027 inclus. Stockage UTC, affichage Europe/Zurich, limite exclusive au minuit suivant. L’expiration est vérifiée à chaque opération sans cron.
 
 ## Retirer en boutique
 
@@ -59,7 +59,7 @@ Le scan GET n’enregistre rien. La validation POST contrôle la connexion, la c
 
 Accueil par lots, détail d’une distribution, vue transversale des bons, filtres lot/statut et compteurs total/disponibles/retirés/expirés. Les compteurs ouvrent les bons concernés. Le libellé de gestion « Retiré » correspond au statut historique « Utilisé » conservé dans le CSV. Un bon utilisé reste utilisé après expiration. Le compteur « Disponibles » exclut les expirés. Les compteurs portent sur le lot sélectionné ou tous les lots ; le statut filtre le tableau et le CSV.
 
-CSV UTF-8 avec BOM et séparateur point-virgule, compatible Excel, contenant code, lot, création, validité, statut, retrait. Les tokens et liens utilisables ne figurent pas dans le CSV. Les noms de lot commençant par un caractère de formule sont neutralisés.
+CSV UTF-8 avec BOM et séparateur point-virgule, compatible Excel, contenant code, lot, création, validité, statut, retrait et cadeau (colonne ajoutée à la fin pour préserver l’ordre des six colonnes historiques). Les tokens et liens utilisables ne figurent pas dans le CSV. Les noms de lot commençant par un caractère de formule sont neutralisés.
 
 ## Cache, confidentialité et exploitation
 
@@ -79,7 +79,7 @@ Voir [la procédure](docs/DEPLOIEMENT.md). La copie locale est une recette, pas 
 
 ## Tests
 
-Sur une **copie locale uniquement** : `wp eval-file tests/integration.php` (47 assertions métier ; crée et retire ses seules données de test). Suite HTTP reproductible sur localhost (38 contrôles supplémentaires) : `wp eval-file tests/prepare-http.php`, puis `python3 tests/http_checks.py`, enfin `wp eval-file tests/cleanup-http.php`, même en cas d’échec. Elle crée ses propres comptes temporaires et lot, vérifie les accès, ZIP, CSV et six validations concurrentes. Le fichier `output/http-fixture.json` contient des cookies éphémères : il est privé, ignoré par Git et supprimé au nettoyage. GitHub Actions exécute ces tests avec PHP 8.1, 8.3 et 8.4. Les captures mobiles/tablettes et le décodage Apple Vision complètent cette suite. Le test Swift optionnel `swift tests/decode-qr.swift chemin/bon.png` vérifie le décodage d’un PNG sous macOS.
+Sur une **copie locale uniquement** : `wp eval-file tests/integration.php` (65 assertions métier ; crée et retire ses seules données de test). Suite HTTP reproductible sur localhost (42 contrôles supplémentaires) : `wp eval-file tests/prepare-http.php`, puis `python3 tests/http_checks.py`, enfin `wp eval-file tests/cleanup-http.php`, même en cas d’échec. Elle crée ses propres comptes temporaires et lot, vérifie les accès, ZIP, CSV et six validations concurrentes. Le fichier `output/http-fixture.json` contient des cookies éphémères : il est privé, ignoré par Git et supprimé au nettoyage. GitHub Actions exécute ces tests avec PHP 8.1, 8.3 et 8.4. Les captures mobiles/tablettes et le décodage Apple Vision complètent cette suite. Le test Swift optionnel `swift tests/decode-qr.swift chemin/bon.png` vérifie le décodage d’un PNG sous macOS.
 
 ## Recette caméra et responsive
 

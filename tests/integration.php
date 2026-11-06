@@ -30,6 +30,24 @@ try {
     $key = bin2hex(random_bytes(32));
     $id = Store::create_lot('RECETTE AUTOMATISÉE — à supprimer', 25, $key);
     $check(is_int($id), 'Create batch of 25'); $lot_ids[] = $id;
+    $future = (new DateTimeImmutable('now', new DateTimeZone('Europe/Zurich')))->modify('+45 days')->format('Y-m-d');
+    $custom = Store::create_lot('RECETTE cadeau personnalisé', 2, bin2hex(random_bytes(32)), 'Coffret de 8 cookies — 40 CHF', $future);
+    $check(is_int($custom), 'Create custom gift/date lot'); $lot_ids[] = $custom;
+    $custom_bons = Store::bons($custom);
+    $check(Store::lot($custom)->title === 'Coffret de 8 cookies — 40 CHF' && $custom_bons[0]->title === Store::lot($custom)->title, 'Gift copied consistently into lot and bon view');
+    $check(Store::expiry_label($custom_bons[0]->expires_at) === (new DateTimeImmutable($future))->format('d/m/Y'), 'Custom expiry date inclusive');
+    $check($custom_bons[0]->expires_at === Store::lot($custom)->expires_at, 'Lot and every bon share exact expiry');
+    $check(is_wp_error(Store::create_lot('Invalid gift', 1, bin2hex(random_bytes(32)), '', $future)), 'Empty gift refused');
+    $check(is_wp_error(Store::create_lot('Invalid gift', 1, bin2hex(random_bytes(32)), str_repeat('A',191), $future)), 'Oversize gift refused');
+    foreach (['2020-01-01', '2027-02-30', '2027-02-29', '', 'not-a-date', '9999-12-31', "2027-02-28\0"] as $bad_date) {
+        $check(is_wp_error(Store::create_lot('Invalid expiry', 1, bin2hex(random_bytes(32)), 'Cadeau', $bad_date)), 'Reject date '.$bad_date);
+    }
+    $year = (int) gmdate('Y') + 1;
+    $march = new DateTimeImmutable('last sunday of March '.$year, new DateTimeZone('Europe/Zurich'));
+    $october = new DateTimeImmutable('last sunday of October '.$year, new DateTimeZone('Europe/Zurich'));
+    $check(substr(Store::selected_expiry($march->format('Y-m-d')),11) === '22:00:00', 'Custom DST-start expiry uses Geneva midnight');
+    $check(substr(Store::selected_expiry($october->format('Y-m-d')),11) === '23:00:00', 'Custom DST-end expiry uses Geneva midnight');
+
     $check(Store::create_lot('RECETTE AUTOMATISÉE — à supprimer', 25, $key) === $id, 'Repeated request returns same lot');
     $bons = Store::bons($id, '', 250);
     $check(count($bons) === 25, 'Exactly 25 bons');
@@ -90,6 +108,13 @@ try {
     $check($info[0] === 1000 && $info[1] === 1320 && $info['mime'] === 'image/png', 'Printable PNG generated');
     wp_mkdir_p(dirname(COOMS_BONS_FILE) . '/output');
     file_put_contents(dirname(COOMS_BONS_FILE) . '/output/test-bon.png', $png);
+    $custom_png = Export::png($custom_bons[0]);
+    file_put_contents(dirname(COOMS_BONS_FILE) . '/output/test-custom-bon.png', $custom_png);
+    $check(getimagesizefromstring($custom_png)['mime'] === 'image/png', 'Custom gift PNG generated');
+    $long_bon = clone $custom_bons[0]; $long_bon->title = str_repeat('W',190);
+    $check(getimagesizefromstring(Export::png($long_bon))['mime'] === 'image/png', '190-character gift fits printable export');
+    $check(Store::lot($id)->title === Store::TITLE, 'Default lot gift remains unchanged');
+
     echo "SUCCESS: $passed checks. Fixture lots/users removed below.\n";
 } finally {
     global $wpdb;

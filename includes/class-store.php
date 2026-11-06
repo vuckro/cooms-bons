@@ -73,6 +73,19 @@ final class Store {
             ->setTime(0, 0)->modify('+1 day')->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
     }
 
+    /** End of the selected inclusive Geneva day, stored as exclusive UTC midnight. */
+    public static function selected_expiry(string $day) {
+        if (!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/D', $day)) {
+            return new \WP_Error('invalid_expiry', 'Choisissez une date de fin de validité à partir d’aujourd’hui.');
+        }
+        $zone = new \DateTimeZone('Europe/Zurich');
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $day, $zone);
+        if (!$date || $date->format('Y-m-d') !== $day || $day > '9999-12-30' || $day < (new \DateTimeImmutable('now', $zone))->format('Y-m-d')) {
+            return new \WP_Error('invalid_expiry', 'Choisissez une date de fin de validité à partir d’aujourd’hui.');
+        }
+        return $date->modify('+1 day')->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+    }
+
     public static function now(): string { return gmdate('Y-m-d H:i:s'); }
 
     public static function status(object $bon, ?string $at = null): string {
@@ -90,20 +103,23 @@ final class Store {
     }
 
     /** @return int|\WP_Error */
-    public static function create_lot(string $name, int $quantity, string $key) {
+    public static function create_lot(string $name, int $quantity, string $key, string $gift = self::TITLE, ?string $valid_until = null) {
         global $wpdb;
         $name = sanitize_text_field($name);
         if ($name === '' || mb_strlen($name) > 160 || $quantity < 1 || $quantity > self::MAX_BATCH || !preg_match('/^[a-f0-9]{64}$/D', $key)) {
             return new \WP_Error('invalid_lot', 'Indiquez un nom (160 caractères maximum) et une quantité de 1 à ' . self::MAX_BATCH . '.');
         }
+        $gift = sanitize_text_field($gift);
+        if ($gift === '' || mb_strlen($gift) > 190) { return new \WP_Error('invalid_gift', 'Indiquez un cadeau de 1 à 190 caractères.'); }
+        $expires = $valid_until === null ? self::expiry(new \DateTimeImmutable('now', new \DateTimeZone('UTC'))) : self::selected_expiry($valid_until);
+        if (is_wp_error($expires)) { return $expires; }
         $lots = self::table('lots');
         $existing = $wpdb->get_var($wpdb->prepare("SELECT id FROM $lots WHERE request_key = %s", $key));
         if ($existing) { return (int) $existing; }
         $now = self::now();
-        $expires = self::expiry(new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
         $wpdb->query('START TRANSACTION');
         try {
-            $created = $wpdb->insert($lots, ['name' => $name, 'title' => self::TITLE, 'quantity' => $quantity,
+            $created = $wpdb->insert($lots, ['name' => $name, 'title' => $gift, 'quantity' => $quantity,
                 'request_key' => $key, 'created_at' => $now, 'expires_at' => $expires, 'created_by' => get_current_user_id()]);
             if (!$created) {
                 $wpdb->query('ROLLBACK');

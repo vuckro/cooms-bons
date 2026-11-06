@@ -236,3 +236,7 @@ La caméra s’arrête avant la navigation et la recherche, à l’annulation, �
 - Don’t ouvrir une URL QR externe ou enregistrer un retrait au simple scan.
 - Don’t collecter le nom ou l’e-mail du bénéficiaire dans les parcours de bons.
 - Don’t présenter les captures et essais virtuels comme une recette sur iPhone physique ou une certification de sécurité.
+
+### Personnalisation du lot (1.2)
+
+Le formulaire présente nom, quantité, cadeau et date de fin de validité. Les valeurs par défaut restent le cadeau historique et six mois. L’aperçu reflète immédiatement le texte et la date ; une erreur serveur conserve les champs et la clé de soumission, dans un message du formulaire. La date est incluse en heure de Genève. Les intitulés longs se replient dans l’aperçu et le retrait, et sont composés sur plusieurs lignes dans le PNG.

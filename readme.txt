@@ -4,14 +4,14 @@ Tags: qr-code, gift-vouchers
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Bons anonymes par lots, QR codes PNG et validation sécurisée en boutique COOMS.
 
 == Description ==
-Génération de lots, expiration à six mois calendaires, export ZIP PNG, rôle vendeur, validation à usage unique, suivi et export CSV. Aucun service externe, paiement ni envoi d’e-mail.
+Génération de lots, cadeau et date limite personnalisables (six mois proposés), export ZIP PNG, rôle vendeur, validation à usage unique, suivi et export CSV. Aucun service externe, paiement ni envoi d’e-mail.
 
 == Installation ==
 Téléverser le ZIP de release avec ses dépendances et activer. Nécessite GD/FreeType, ZIP et InnoDB. Lire README.md et configurer les exclusions de cache avant utilisation réelle.
@@ -24,6 +24,9 @@ Non. Seule la confirmation explicite d’un vendeur autorisé enregistre la remi
 Non. Les données sont conservées pour préserver le rapprochement des retraits.
 
 == Changelog ==
+= 1.2.0 =
+Cadeau et date de validité personnalisables par lot, repris sur les bons, retraits et exports.
+
 = 1.1.0 =
 Scanner caméra intégré, saisie manuelle de secours, vue Lots et interface de gestion affinée.
 

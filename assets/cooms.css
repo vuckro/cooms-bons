@@ -1175,7 +1175,7 @@ body.cb-scan {
   }
 }
 /* Keep COOMS controls consistent even when a host admin skin restyles inputs. */
-.cb-app .cb-field input:is([type="text"], [type="number"]),
+.cb-app .cb-field input:is([type="text"], [type="number"], [type="date"]),
 .cb-app .cb-work .cb-filters select {
   min-height: 42px;
   padding: 8px 12px;
@@ -1198,7 +1198,7 @@ body.cb-scan {
   align-items: center;
 }
 @media (max-width: 600px) {
-  .cb-app .cb-field input:is([type="text"], [type="number"]),
+  .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"]),
   .cb-app .cb-work .cb-filters select {
     min-height: 44px;
     font-size: 16px;
@@ -1230,4 +1230,20 @@ body.cb-scan {
   width: 100%;
   min-height: 52px;
   border-radius: 8px;
+}
+
+.cb-app .cb-field input[type="date"] {
+  width: 100%;
+  max-width: 300px;
+}
+.cb-preview strong,
+.cb-gift h2 {
+  overflow-wrap: anywhere;
+}
+
+.cb-heading > div:first-child {
+  min-width: 0;
+}
+.cb-heading p {
+  overflow-wrap: anywhere;
 }
