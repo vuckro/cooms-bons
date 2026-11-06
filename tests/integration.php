@@ -2,6 +2,7 @@
 /** Run with wp eval-file tests/integration.php on LOCAL only. */
 use Cooms\Bons\Store;
 use Cooms\Bons\Export;
+use Cooms\Bons\Scanner;
 if (wp_get_environment_type() !== 'local') { throw new RuntimeException('Local environment required.'); }
 $passed = 0;
 $check = static function ($ok, string $label) use (&$passed) {
@@ -35,6 +36,17 @@ try {
     $check(count(array_unique(array_column($bons, 'token'))) === 25, 'Unique secret tokens');
     $check(count(array_unique(array_column($bons, 'code'))) === 25, 'Unique printed references');
     $check(strlen($bons[0]->token) === 64, '256-bit encoded token');
+    $check(Scanner::resolve($bons[0]->code)->id === $bons[0]->id, 'Manual reference resolves bon');
+    $check(Scanner::resolve(strtolower(str_replace('-', ' ', $bons[0]->code)))->id === $bons[0]->id, 'Case and space reference normalization');
+    $check(Scanner::resolve(Store::url($bons[0]))->id === $bons[0]->id, 'Own QR URL resolves bon');
+    $check(Scanner::resolve('https://example.invalid/?cooms_bon=' . $bons[0]->token) === null, 'External QR origin refused');
+    $check(Scanner::resolve(home_url('/other/') . '?cooms_bon=' . $bons[0]->token) === null, 'Wrong QR path refused');
+    $check(Scanner::resolve(Store::url($bons[0]) . '#fragment') === null, 'Unexpected URL fragment refused');
+    $check(Scanner::resolve(home_url('/') . '?cooms_bon[]=bad') === null, 'Array token refused');
+    $check(Scanner::resolve(str_repeat('A', 1025)) === null, 'Oversize input refused');
+    $summary = array_values(array_filter(Store::lot_summaries(1000), static fn($row) => (int) $row->id === $id))[0];
+    $check((int) $summary->available === 25 && (int) $summary->used === 0, 'Lot summary initial volumes');
+
     $check(Store::find('1') === null && Store::find(str_repeat('a', 64)) === null, 'Unknown tokens rejected');
     $check(Store::status(Store::find($bons[0]->token)) === 'available', 'Consulting leaves bon available');
     $counts = Store::counts($id);
@@ -57,10 +69,18 @@ try {
     $check(!is_wp_error($seller_id), 'Create isolated seller fixture'); $user_ids[] = $seller_id;
     wp_set_current_user($seller_id);
     $check(current_user_can(Store::REDEEM) && !current_user_can(Store::MANAGE) && !current_user_can('edit_posts'), 'Least-privilege seller role');
+    $original_page = $_GET['page'] ?? null;
+    $_GET['page'] = 'cooms-bons-scan';
+    $check((new \Cooms\Bons\Plugin())->allow_seller_pages(true) === false, 'WooCommerce permits the seller scanner page');
+    $_GET['page'] = 'users';
+    $check((new \Cooms\Bons\Plugin())->allow_seller_pages(true) === true, 'WooCommerce restriction retained outside COOMS pages');
+    if ($original_page === null) { unset($_GET['page']); } else { $_GET['page'] = $original_page; }
+
     $check(Store::redeem($bons[2]->token)['result'] === 'success', 'Seller may redeem');
     $check((int) Store::find($bons[2]->token)->redeemed_by === $seller_id, 'Seller recorded');
     wp_set_current_user(0);
     $check(Store::redeem($bons[3]->token)['result'] === 'forbidden', 'Anonymous redemption refused');
+    $check(Scanner::resolve($bons[3]->code) === null && Store::find_code($bons[3]->code) === null, 'Anonymous manual lookup refused');
     $check(Store::status(Store::find($bons[3]->token)) === 'available', 'Forbidden request did not consume bon');
     $check(Export::cell('=HYPERLINK("evil")')[0] === "'" && Export::cell('  +SUM(A1)')[0] === "'", 'CSV formula injection escaped');
     $check(Export::ready(), 'PNG and ZIP runtime prerequisites');

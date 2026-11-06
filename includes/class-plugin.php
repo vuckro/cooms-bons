@@ -4,6 +4,7 @@ defined('ABSPATH') || exit;
 
 final class Plugin {
     public function boot(): void {
+        add_filter('woocommerce_prevent_admin_access', [$this, 'allow_seller_pages']);
         add_action('admin_menu', [$this, 'menu']);
         add_action('admin_enqueue_scripts', [$this, 'assets']);
         add_action('admin_post_cooms_create', [$this, 'create']);
@@ -11,12 +12,26 @@ final class Plugin {
         add_action('template_redirect', [$this, 'scan'], -100);
     }
 
+    /** WooCommerce normally redirects accounts without edit_posts to My Account. */
+    public function allow_seller_pages(bool $prevent): bool {
+        $page = isset($_GET['page']) && is_string($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+        if (current_user_can(Store::REDEEM) && in_array($page, ['cooms-bons', 'cooms-bons-scan', 'cooms-bons-help'], true)) {
+            return false;
+        }
+        return $prevent;
+    }
+
     public function menu(): void {
         add_menu_page('COOMS Bons', 'COOMS Bons', Store::REDEEM, 'cooms-bons', [$this, 'admin'], 'dashicons-tickets-alt', 57);
         if (current_user_can(Store::MANAGE)) {
-            add_submenu_page('cooms-bons', 'Tous les bons', 'Tous les bons', Store::MANAGE, 'cooms-bons', [$this, 'admin']);
+            add_submenu_page('cooms-bons', 'Lots et bons', 'Lots et bons', Store::MANAGE, 'cooms-bons', [$this, 'admin']);
             add_submenu_page('cooms-bons', 'Nouveau lot', 'Nouveau lot', Store::MANAGE, 'cooms-bons-new', [$this, 'admin']);
         }
+        $scan_hook = add_submenu_page('cooms-bons', 'Scanner un bon', 'Scanner un bon', Store::REDEEM, 'cooms-bons-scan', '__return_null');
+        add_action('load-' . $scan_hook, static function () { wp_safe_redirect(Scanner::url()); exit; });
+        add_action('load-toplevel_page_cooms-bons', static function () {
+            if (!current_user_can(Store::MANAGE)) { wp_safe_redirect(Scanner::url()); exit; }
+        });
         add_submenu_page('cooms-bons', 'Aide boutique', 'Aide boutique', Store::REDEEM, 'cooms-bons-help', [$this, 'admin']);
     }
 
@@ -47,9 +62,15 @@ final class Plugin {
         $counts = Store::counts($lot_id);
         $total = $status ? $counts[$status] : $counts['total'];
         $page_num = min($page_num, max(1, (int) ceil($total / 30)));
+        $view = isset($_GET['view']) && $_GET['view'] === 'bons' ? 'bons' : 'lots';
+        if ($lot_id || $status) { $view = 'bons'; }
         $rows = Store::bons($lot_id, $status, 30, ($page_num - 1) * 30);
         $lots = Store::lots();
         $lot = $lot_id ? Store::lot($lot_id) : null;
+        if ($lot_id && !$lot) { wp_die('Lot introuvable.', '', ['response' => 404]); }
+        $lot_page = max(1, isset($_GET['paged']) ? absint($_GET['paged']) : 1);
+        $lot_page = min($lot_page, max(1, (int) ceil(count($lots) / 30)));
+        $summaries = $view === 'lots' ? Store::lot_summaries(30, ($lot_page - 1) * 30) : [];
         require dirname(COOMS_BONS_FILE) . '/templates/admin.php';
     }
 

@@ -7,7 +7,7 @@ if (file_exists($path)) { throw new RuntimeException('Clean up the previous HTTP
 $fixture = ['base' => home_url(), 'accounts' => []];
 foreach (['admin' => 'administrator', 'seller' => 'cooms_seller', 'subscriber' => 'subscriber'] as $label => $role) {
     $login = 'cooms-http-' . $label . '-' . bin2hex(random_bytes(5));
-    $id = wp_insert_user(['user_login' => $login, 'user_pass' => wp_generate_password(40), 'role' => $role]);
+    $id = wp_insert_user(['user_login' => $login, 'display_name' => $label === 'seller' ? 'Vendeur · Recette' : 'Responsable · Recette', 'user_pass' => wp_generate_password(40), 'role' => $role]);
     if (is_wp_error($id)) { throw new RuntimeException($id->get_error_message()); }
     $expiration = time() + 3600;
     $token = WP_Session_Tokens::get_instance($id)->create($expiration);

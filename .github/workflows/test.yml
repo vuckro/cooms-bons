@@ -32,6 +32,7 @@ jobs:
         run: |
           find . -path ./vendor -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
           node --check assets/cooms.js
+          node --check assets/scanner.js
       - name: Install isolated WordPress
         run: |
           mkdir /tmp/cooms-wordpress
@@ -50,6 +51,25 @@ jobs:
           PHP_CLI_SERVER_WORKERS=6 php -S 127.0.0.1:8099 -t /tmp/cooms-wordpress > /tmp/cooms-http.log 2>&1 &
           for attempt in $(seq 1 20); do curl --silent --fail http://127.0.0.1:8099/wp-login.php > /dev/null && break; sleep 1; done
           python3 tests/http_checks.py
+      - name: Browser scanner checks with a virtual camera
+        if: matrix.php == '8.3'
+        run: |
+          if ! command -v ffmpeg > /dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          cat > /tmp/cooms-playwright <<'SH'
+          #!/usr/bin/env bash
+          exec npx --yes --package @playwright/cli@0.1.23 playwright-cli "$@"
+          SH
+          chmod +x /tmp/cooms-playwright
+          wp eval-file "$GITHUB_WORKSPACE/tests/prepare-camera.php" --path=/tmp/cooms-wordpress
+          PWCLI=/tmp/cooms-playwright python3 tests/browser_checks.py
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.php == '8.3'
+        with:
+          name: scanner-browser-captures
+          path: ../output/playwright/cooms11*.png
       - name: Remove disposable HTTP fixtures
         if: always()
         run: |
@@ -62,9 +82,9 @@ jobs:
         run: |
           test -L /tmp/cooms-wordpress/wp-content/plugins/cooms-bons
           unlink /tmp/cooms-wordpress/wp-content/plugins/cooms-bons
-          wp plugin install "$GITHUB_WORKSPACE/dist/cooms-bons-1.0.0.zip" --activate --path=/tmp/cooms-wordpress
+          wp plugin install "$GITHUB_WORKSPACE/dist/cooms-bons-1.1.0.zip" --activate --path=/tmp/cooms-wordpress
           wp eval-file "$GITHUB_WORKSPACE/tests/integration.php" --path=/tmp/cooms-wordpress
       - uses: actions/upload-artifact@v4
         with:
           name: cooms-bons-php-${{ matrix.php }}
-          path: dist/cooms-bons-1.0.0.zip
+          path: dist/cooms-bons-1.1.0.zip

@@ -1,3 +1,5 @@
+> Historique version1.0. Pour l’entrée Scanner intégrée et les nouvelles pages, voir [le tutoriel1.1](TUTORIEL-1.1.md).
+
 # Tutoriel COOMS Bons — deux minutes
 
 La vidéo fournie avec la livraison montre une copie locale et des bons de recette. Aucun envoi à la Fondation ou retrait réel n’y est effectué. Elle comporte une narration française synthétique et des légendes.

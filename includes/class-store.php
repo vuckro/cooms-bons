@@ -135,6 +135,20 @@ final class Store {
         return $wpdb->get_row($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title FROM $bons b INNER JOIN $lots l ON l.id=b.lot_id WHERE b.token=%s", $token));
     }
 
+    public static function find_code(string $code): ?object {
+        global $wpdb;
+        if (!current_user_can(self::REDEEM) || !preg_match('/^COOMS-[A-F0-9]{10}$/D', $code)) { return null; }
+        $token = $wpdb->get_var($wpdb->prepare('SELECT token FROM ' . self::table('bons') . ' WHERE code=%s', $code));
+        return $token ? self::find($token) : null;
+    }
+
+    public static function lot_summaries(int $limit = 30, int $offset = 0): array {
+        global $wpdb;
+        $l = self::table('lots'); $b = self::table('bons'); $now = self::now();
+        return $wpdb->get_results($wpdb->prepare("SELECT l.*, COALESCE(c.used,0) AS used, COALESCE(c.available,0) AS available, COALESCE(c.expired,0) AS expired FROM $l l LEFT JOIN
+            (SELECT lot_id, SUM(redeemed_at IS NOT NULL) AS used, SUM(redeemed_at IS NULL AND expires_at > %s) AS available, SUM(redeemed_at IS NULL AND expires_at <= %s) AS expired FROM $b GROUP BY lot_id) c ON c.lot_id=l.id ORDER BY l.id DESC LIMIT %d OFFSET %d", $now, $now, $limit, $offset));
+    }
+
     /** No check-then-write: eligibility and consumption occur in one database statement. */
     public static function redeem(string $token): array {
         global $wpdb;

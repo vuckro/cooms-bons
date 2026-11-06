@@ -14,10 +14,10 @@ Responsables COOMS : préparer chaque semaine des lots anonymes pour une Fondati
 Une boîte de quatre cookies, valeur 20 CHF, contre un bon anonyme valable six mois, utilisable une seule fois en boutique à Genève.
 
 ## Operating Context
-Compte WordPress vendeur, caméra native, navigateur connecté et Internet. Génération par lot, export ZIP PNG individuel, distribution externe, validation explicite, réconciliation CSV. Test WordPress localhost:10033 ; dépôt github.com/vuckro/cooms-bons.
+Compte WordPress vendeur, scanner caméra dans la page boutique (ou caméra native), saisie de référence en secours, navigateur connecté et Internet. Génération par lot, export ZIP PNG individuel, distribution externe, validation explicite, réconciliation CSV. Test WordPress localhost:10033 ; dépôt github.com/vuckro/cooms-bons.
 
 ## Capabilities and Constraints
-Lots, tokens cryptographiques, expiration six mois calendaires en Europe/Zurich, retrait atomique, suivi et exports privés. Aucun nom/e-mail bénéficiaire. Pas de caisse Lightspeed, WooCommerce, FluentBooking, envoi mail ou mode hors ligne. Livraison prévue le 13 novembre 2026. Tutoriel court prévu.
+Vue Lots et détail des bons, scanner réservé aux vendeurs, recherche de référence, tokens cryptographiques, expiration six mois calendaires en Europe/Zurich, retrait atomique, suivi et exports privés. Aucun nom/e-mail bénéficiaire. Pas de caisse Lightspeed, WooCommerce, FluentBooking, envoi mail ou mode hors ligne. Livraison prévue le 13 novembre 2026. Tutoriel court prévu.
 
 ## Brand Commitments
 COOMS Bons ; français clair, vocabulaire de boutique. L’utilisateur délègue les choix et demande simplicité, efficacité, fonctionnement prévisible et maintenabilité. La gestion doit s’intégrer à WordPress ; la caisse doit rester indépendante du thème.

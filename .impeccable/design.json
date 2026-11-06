@@ -1,112 +1,322 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T19:55:43.661454+00:00",
+  "generatedAt": "2026-11-06T20:49:54.076029+00:00",
   "title": "Design System: COOMS Bons",
   "extensions": {
     "colorMeta": {
       "paper": {
         "role": "neutral",
-        "displayName": "Papier"
+        "displayName": "Fond neutre",
+        "tonalRamp": [
+          "oklch(15% 0.002 250)",
+          "oklch(26% 0.005 250)",
+          "oklch(38% 0.007 250)",
+          "oklch(50% 0.008 250)",
+          "oklch(62% 0.008 250)",
+          "oklch(74% 0.006 250)",
+          "oklch(86% 0.004 250)",
+          "oklch(95% 0.001 250)"
+        ]
       },
       "surface": {
         "role": "neutral",
-        "displayName": "Surface"
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(15% 0.002 250)",
+          "oklch(26% 0.005 250)",
+          "oklch(38% 0.007 250)",
+          "oklch(50% 0.008 250)",
+          "oklch(62% 0.008 250)",
+          "oklch(74% 0.006 250)",
+          "oklch(86% 0.004 250)",
+          "oklch(95% 0.001 250)"
+        ]
       },
       "ink": {
         "role": "neutral",
-        "displayName": "Encre"
+        "displayName": "Graphite",
+        "tonalRamp": [
+          "oklch(15% 0.002 250)",
+          "oklch(26% 0.005 250)",
+          "oklch(38% 0.007 250)",
+          "oklch(50% 0.008 250)",
+          "oklch(62% 0.008 250)",
+          "oklch(74% 0.006 250)",
+          "oklch(86% 0.004 250)",
+          "oklch(95% 0.001 250)"
+        ]
       },
       "muted": {
         "role": "neutral",
-        "displayName": "Encre secondaire"
+        "displayName": "Texte secondaire",
+        "tonalRamp": [
+          "oklch(15% 0.002 250)",
+          "oklch(26% 0.005 250)",
+          "oklch(38% 0.007 250)",
+          "oklch(50% 0.008 250)",
+          "oklch(62% 0.008 250)",
+          "oklch(74% 0.006 250)",
+          "oklch(86% 0.004 250)",
+          "oklch(95% 0.001 250)"
+        ]
       },
       "border": {
         "role": "neutral",
-        "displayName": "Trait"
+        "displayName": "Trait",
+        "tonalRamp": [
+          "oklch(15% 0.002 250)",
+          "oklch(26% 0.005 250)",
+          "oklch(38% 0.007 250)",
+          "oklch(50% 0.008 250)",
+          "oklch(62% 0.008 250)",
+          "oklch(74% 0.006 250)",
+          "oklch(86% 0.004 250)",
+          "oklch(95% 0.001 250)"
+        ]
       },
       "accent": {
         "role": "primary",
-        "displayName": "Rouge COOMS"
+        "displayName": "Rouge COOMS",
+        "tonalRamp": [
+          "oklch(15% 0.036 28)",
+          "oklch(26% 0.078 28)",
+          "oklch(38% 0.108 28)",
+          "oklch(50% 0.12 28)",
+          "oklch(62% 0.12 28)",
+          "oklch(74% 0.096 28)",
+          "oklch(86% 0.054 28)",
+          "oklch(95% 0.018 28)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Rouge profond au survol",
+        "tonalRamp": [
+          "oklch(15% 0.036 28)",
+          "oklch(26% 0.078 28)",
+          "oklch(38% 0.108 28)",
+          "oklch(50% 0.12 28)",
+          "oklch(62% 0.12 28)",
+          "oklch(74% 0.096 28)",
+          "oklch(86% 0.054 28)",
+          "oklch(95% 0.018 28)"
+        ]
       },
       "link": {
         "role": "primary",
-        "displayName": "Rouge profond"
+        "displayName": "Rouge profond des liens",
+        "tonalRamp": [
+          "oklch(15% 0.036 28)",
+          "oklch(26% 0.078 28)",
+          "oklch(38% 0.108 28)",
+          "oklch(50% 0.12 28)",
+          "oklch(62% 0.12 28)",
+          "oklch(74% 0.096 28)",
+          "oklch(86% 0.054 28)",
+          "oklch(95% 0.018 28)"
+        ]
+      },
+      "link-dark": {
+        "role": "primary",
+        "displayName": "Corail lisible en sombre",
+        "tonalRamp": [
+          "oklch(15% 0.036 28)",
+          "oklch(26% 0.078 28)",
+          "oklch(38% 0.108 28)",
+          "oklch(50% 0.12 28)",
+          "oklch(62% 0.12 28)",
+          "oklch(74% 0.096 28)",
+          "oklch(86% 0.054 28)",
+          "oklch(95% 0.018 28)"
+        ]
       },
       "green": {
         "role": "secondary",
-        "displayName": "Vert boutique"
+        "displayName": "Vert boutique",
+        "tonalRamp": [
+          "oklch(15% 0.036 150)",
+          "oklch(26% 0.078 150)",
+          "oklch(38% 0.108 150)",
+          "oklch(50% 0.12 150)",
+          "oklch(62% 0.12 150)",
+          "oklch(74% 0.096 150)",
+          "oklch(86% 0.054 150)",
+          "oklch(95% 0.018 150)"
+        ]
       },
       "green-bg": {
         "role": "secondary",
-        "displayName": "Fond disponible"
+        "displayName": "Fond disponible",
+        "tonalRamp": [
+          "oklch(15% 0.036 150)",
+          "oklch(26% 0.078 150)",
+          "oklch(38% 0.108 150)",
+          "oklch(50% 0.12 150)",
+          "oklch(62% 0.12 150)",
+          "oklch(74% 0.096 150)",
+          "oklch(86% 0.054 150)",
+          "oklch(95% 0.018 150)"
+        ]
       },
       "redeem-hover": {
         "role": "secondary",
-        "displayName": "Vert au survol"
+        "displayName": "Vert de remise au survol",
+        "tonalRamp": [
+          "oklch(15% 0.036 28)",
+          "oklch(26% 0.078 28)",
+          "oklch(38% 0.108 28)",
+          "oklch(50% 0.12 28)",
+          "oklch(62% 0.12 28)",
+          "oklch(74% 0.096 28)",
+          "oklch(86% 0.054 28)",
+          "oklch(95% 0.018 28)"
+        ]
       },
       "red": {
         "role": "tertiary",
-        "displayName": "Rouge indisponible"
+        "displayName": "Rouge indisponible",
+        "tonalRamp": [
+          "oklch(15% 0.036 28)",
+          "oklch(26% 0.078 28)",
+          "oklch(38% 0.108 28)",
+          "oklch(50% 0.12 28)",
+          "oklch(62% 0.12 28)",
+          "oklch(74% 0.096 28)",
+          "oklch(86% 0.054 28)",
+          "oklch(95% 0.018 28)"
+        ]
       },
       "red-bg": {
         "role": "tertiary",
-        "displayName": "Fond indisponible"
+        "displayName": "Fond indisponible",
+        "tonalRamp": [
+          "oklch(15% 0.036 28)",
+          "oklch(26% 0.078 28)",
+          "oklch(38% 0.108 28)",
+          "oklch(50% 0.12 28)",
+          "oklch(62% 0.12 28)",
+          "oklch(74% 0.096 28)",
+          "oklch(86% 0.054 28)",
+          "oklch(95% 0.018 28)"
+        ]
       },
       "amber": {
         "role": "tertiary",
-        "displayName": "Ambre expiration"
+        "displayName": "Ambre expiration",
+        "tonalRamp": [
+          "oklch(15% 0.036 80)",
+          "oklch(26% 0.078 80)",
+          "oklch(38% 0.108 80)",
+          "oklch(50% 0.12 80)",
+          "oklch(62% 0.12 80)",
+          "oklch(74% 0.096 80)",
+          "oklch(86% 0.054 80)",
+          "oklch(95% 0.018 80)"
+        ]
       },
       "amber-bg": {
         "role": "tertiary",
-        "displayName": "Fond expiré"
+        "displayName": "Fond expiré",
+        "tonalRamp": [
+          "oklch(15% 0.036 80)",
+          "oklch(26% 0.078 80)",
+          "oklch(38% 0.108 80)",
+          "oklch(50% 0.12 80)",
+          "oklch(62% 0.12 80)",
+          "oklch(74% 0.096 80)",
+          "oklch(86% 0.054 80)",
+          "oklch(95% 0.018 80)"
+        ]
+      },
+      "used": {
+        "role": "neutral",
+        "displayName": "Retrait enregistré",
+        "tonalRamp": [
+          "oklch(15% 0.002 250)",
+          "oklch(26% 0.005 250)",
+          "oklch(38% 0.007 250)",
+          "oklch(50% 0.008 250)",
+          "oklch(62% 0.008 250)",
+          "oklch(74% 0.006 250)",
+          "oklch(86% 0.004 250)",
+          "oklch(95% 0.001 250)"
+        ]
+      },
+      "used-bg": {
+        "role": "neutral",
+        "displayName": "Fond retrait enregistré",
+        "tonalRamp": [
+          "oklch(15% 0.002 250)",
+          "oklch(26% 0.005 250)",
+          "oklch(38% 0.007 250)",
+          "oklch(50% 0.008 250)",
+          "oklch(62% 0.008 250)",
+          "oklch(74% 0.006 250)",
+          "oklch(86% 0.004 250)",
+          "oklch(95% 0.001 250)"
+        ]
       }
     },
     "typographyMeta": {
       "headline-admin": {
         "displayName": "Headline admin",
-        "purpose": "Titre de gestion, 24px à 600px et moins."
+        "purpose": "Titre de gestion ; 26px à 600px et moins."
       },
       "headline-scan": {
         "displayName": "Headline scan",
-        "purpose": "Verdict boutique, 28px à 600px et moins."
+        "purpose": "Titre boutique ; 28px à 600px et moins."
       },
       "title-admin": {
         "displayName": "Title admin",
-        "purpose": "Sections de gestion."
+        "purpose": "Hiérarchie du système 1.1, valeurs normatives dans DESIGN.md."
       },
       "title-gift": {
         "displayName": "Title gift",
-        "purpose": "Désignation du cadeau."
+        "purpose": "Hiérarchie du système 1.1, valeurs normatives dans DESIGN.md."
       },
       "body-admin": {
         "displayName": "Body admin",
-        "purpose": "Gestion et formulaires."
+        "purpose": "Hiérarchie du système 1.1, valeurs normatives dans DESIGN.md."
       },
       "body-scan": {
         "displayName": "Body scan",
-        "purpose": "Lecture boutique."
+        "purpose": "Hiérarchie du système 1.1, valeurs normatives dans DESIGN.md."
+      },
+      "reference": {
+        "displayName": "Reference",
+        "purpose": "Références techniques ; saisie manuelle en 16px."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Contrôles explicites."
-      },
-      "table": {
-        "displayName": "Table",
-        "purpose": "Tableaux et aides compactes."
+        "purpose": "Hiérarchie du système 1.1, valeurs normatives dans DESIGN.md."
       }
     },
-    "shadows": [],
+    "shadows": [
+      {
+        "name": "camera-mask",
+        "value": "0 0 0 100vmax rgb(0 0 0 / 25%)",
+        "purpose": "Masque de visée vidéo uniquement ; aucune élévation des panneaux."
+      }
+    ],
     "motion": [
       {
         "name": "confirmation",
         "value": "cb-confirm .25s ease-out",
-        "purpose": "Pictogramme de réussite uniquement ; scale(.85) vers scale(1), sous prefers-reduced-motion:no-preference."
+        "purpose": "Pictogramme de réussite, scale(.85) vers scale(1), sous prefers-reduced-motion:no-preference."
       }
     ],
     "breakpoints": [
       {
-        "name": "single-column",
+        "name": "admin-margins",
+        "value": "1100px"
+      },
+      {
+        "name": "section-stack",
         "value": "1000px"
+      },
+      {
+        "name": "single-column",
+        "value": "800px"
       },
       {
         "name": "compact",
@@ -118,99 +328,114 @@
     {
       "name": "Action principale",
       "kind": "button",
-      "description": "Créer un lot depuis la gestion.",
-      "html": "<button class=\"ds-button\">Créer le lot</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:6px;background:var(--cb-accent,#bc3022);color:var(--cb-surface,#fff);font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;cursor:pointer;text-decoration:none;white-space:normal}.ds-button:hover{background:var(--cb-link,#9f271b)}.ds-button:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-button:disabled{opacity:.65;cursor:wait}",
+      "description": "Création de lot ; 42px minimum en gestion, 44px sur mobile.",
+      "html": "<button class=\"ds-btn\">Créer le lot</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 16px;border:1px solid transparent;border-radius:8px;background:var(--cb-accent,#bc3022);color:#fff;font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;text-decoration:none;cursor:pointer;white-space:normal}.ds-btn:hover{background:var(--cb-accent-hover,#9f271b);color:#fff}.ds-btn:focus-visible{outline:3px solid var(--cb-ink,#24282d);outline-offset:4px}.ds-btn:disabled{opacity:.65;cursor:wait}@media(max-width:600px){.ds-btn{min-height:44px}}",
       "refersTo": "button-primary"
     },
     {
       "name": "Action secondaire",
       "kind": "button",
-      "description": "Action complémentaire sur surface blanche.",
-      "html": "<button class=\"ds-button ds-secondary\">Télécharger le ZIP</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:6px;background:var(--cb-accent,#bc3022);color:var(--cb-surface,#fff);font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;cursor:pointer;text-decoration:none;white-space:normal}.ds-button:hover{background:var(--cb-link,#9f271b)}.ds-button:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-button:disabled{opacity:.65;cursor:wait}.ds-secondary{background:var(--cb-surface,#fff);color:var(--cb-ink,#30251f);border-color:var(--cb-border,#ded6cc)}.ds-secondary:hover{background:var(--cb-paper,#fbf8f2);border-color:var(--cb-ink,#30251f)}",
+      "description": "Action complémentaire, bordure et surface neutres.",
+      "html": "<button class=\"ds-btn ds-secondary\">Télécharger le ZIP</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 16px;border:1px solid transparent;border-radius:8px;background:var(--cb-accent,#bc3022);color:#fff;font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;text-decoration:none;cursor:pointer;white-space:normal}.ds-btn:hover{background:var(--cb-accent-hover,#9f271b);color:#fff}.ds-btn:focus-visible{outline:3px solid var(--cb-ink,#24282d);outline-offset:4px}.ds-btn:disabled{opacity:.65;cursor:wait}@media(max-width:600px){.ds-btn{min-height:44px}}.ds-secondary{background:var(--cb-surface,#fff);color:var(--cb-ink,#24282d);border-color:var(--cb-border,#e3e6e9)}.ds-secondary:hover{background:var(--cb-paper,#f6f7f8);color:var(--cb-ink,#24282d);border-color:var(--cb-ink,#24282d)}",
       "refersTo": "button-secondary"
     },
     {
       "name": "Confirmation de remise",
       "kind": "button",
-      "description": "Une action pleine largeur sur le ticket disponible.",
-      "html": "<button class=\"ds-button ds-redeem\">Valider la remise de la boîte</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:6px;background:var(--cb-accent,#bc3022);color:var(--cb-surface,#fff);font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;cursor:pointer;text-decoration:none;white-space:normal}.ds-button:hover{background:var(--cb-link,#9f271b)}.ds-button:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-button:disabled{opacity:.65;cursor:wait}.ds-redeem{width:100%;min-height:56px;font-size:16px;background:var(--cb-green,#16643b)}.ds-redeem:hover{background:#104d2d}",
+      "description": "Confirmation explicite, distincte de la consultation.",
+      "html": "<button class=\"ds-btn ds-redeem\">Valider la remise de la boîte</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 16px;border:1px solid transparent;border-radius:8px;background:var(--cb-accent,#bc3022);color:#fff;font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;text-decoration:none;cursor:pointer;white-space:normal}.ds-btn:hover{background:var(--cb-accent-hover,#9f271b);color:#fff}.ds-btn:focus-visible{outline:3px solid var(--cb-ink,#24282d);outline-offset:4px}.ds-btn:disabled{opacity:.65;cursor:wait}@media(max-width:600px){.ds-btn{min-height:44px}}.ds-redeem{width:100%;min-height:56px;border-radius:6px;font-size:16px;background:var(--cb-green,#16643b)}.ds-redeem:hover{background:#104d2d}@media(max-width:600px){.ds-redeem{min-height:56px}}",
       "refersTo": "button-redeem"
+    },
+    {
+      "name": "Bon suivant",
+      "kind": "button",
+      "description": "Suite après remise, bon déjà utilisé ou expiré ; disponible garde un lien discret.",
+      "html": "<a class=\"ds-btn ds-secondary ds-next\" href=\"#scanner\">Scanner le bon suivant</a>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 16px;border:1px solid transparent;border-radius:8px;background:var(--cb-accent,#bc3022);color:#fff;font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;text-decoration:none;cursor:pointer;white-space:normal}.ds-btn:hover{background:var(--cb-accent-hover,#9f271b);color:#fff}.ds-btn:focus-visible{outline:3px solid var(--cb-ink,#24282d);outline-offset:4px}.ds-btn:disabled{opacity:.65;cursor:wait}@media(max-width:600px){.ds-btn{min-height:44px}}.ds-secondary{background:var(--cb-surface,#fff);color:var(--cb-ink,#24282d);border-color:var(--cb-border,#e3e6e9)}.ds-secondary:hover{background:var(--cb-paper,#f6f7f8);color:var(--cb-ink,#24282d);border-color:var(--cb-ink,#24282d)}.ds-next{display:flex;width:100%;min-height:52px;font-size:16px;margin-top:20px}@media(max-width:600px){.ds-next{min-height:52px}}",
+      "refersTo": "button-next"
     },
     {
       "name": "Champ de lot",
       "kind": "input",
-      "description": "Libellé et aide autour d’un champ natif.",
-      "html": "<label class=\"ds-label\" for=\"ds-lot\">Nom du lot</label><input class=\"ds-input\" id=\"ds-lot\" value=\"Fondation — Semaine 46\"><p class=\"ds-help\">Un nom reconnaissable pour retrouver les retraits et les exports.</p>",
-      "css": ".ds-label{display:block;margin-bottom:6px;font:600 14px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;color:var(--cb-ink,#30251f)}.ds-input{min-height:44px;width:100%;padding:8px 12px;border:1px solid var(--cb-border,#ded6cc);border-radius:6px;background:var(--cb-surface,#fff);color:var(--cb-ink,#30251f);font:14px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-input:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-help{margin:6px 0 0;font:13px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;color:var(--cb-muted,#665b51)}",
+      "description": "Contrôle protégé des tailles imposées par un habillage admin.",
+      "html": "<label class=\"ds-label\" for=\"ds-lot\">Nom du lot</label><input class=\"ds-input\" id=\"ds-lot\" placeholder=\"Fondation — Semaine 46\"><p class=\"ds-help\">Un nom reconnaissable pour retrouver les retraits et les exports.</p>",
+      "css": ".ds-label{display:block;margin-bottom:6px;font:600 14px/1.6 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;color:var(--cb-ink,#24282d)}.ds-input{width:100%;min-height:42px;padding:8px 12px;border:1px solid var(--cb-border,#e3e6e9);border-radius:8px;background:var(--cb-surface,#fff);color:var(--cb-ink,#24282d);font:14px/1.6 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif}.ds-input:focus-visible{outline:2px solid var(--cb-accent,#bc3022);outline-offset:2px}.ds-help{margin:6px 0 0;font:13px/1.6 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;color:var(--cb-muted,#626971)}@media(max-width:600px){.ds-input{min-height:44px;font-size:16px}}",
       "refersTo": "input"
     },
     {
-      "name": "Statuts",
+      "name": "Statuts de gestion",
       "kind": "chip",
-      "description": "États écrits avec une couleur complémentaire.",
-      "html": "<span class=\"ds-status\">Disponible</span> <span class=\"ds-status ds-used\">Utilisé</span> <span class=\"ds-status ds-expired\">Expiré</span>",
-      "css": ".ds-status{display:inline-flex;padding:3px 10px;border-radius:99px;background:var(--cb-green-bg,#eaf5ee);color:var(--cb-green,#16643b);font:600 13px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;white-space:nowrap}.ds-used{background:var(--cb-red-bg,#fbeeed);color:var(--cb-red,#9e2828)}.ds-expired{background:var(--cb-amber-bg,#fff4db);color:var(--cb-amber,#805000)}",
-      "refersTo": "status-available"
+      "description": "Retrait enregistré neutre dans les tableaux. Ajouter le libellé à la couleur.",
+      "html": "<span class=\"ds-status ds-available\">Disponible</span> <span class=\"ds-status ds-used\">Retiré</span> <span class=\"ds-status ds-expired\">Expiré</span>",
+      "css": ".ds-status{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:99px;font:550 12px/1.6 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;white-space:nowrap}.ds-status:before{content:\"\";width:5px;height:5px;border-radius:50%;background:currentColor}.ds-available{background:var(--cb-green-bg,#eaf5ee);color:var(--cb-green,#16643b)}.ds-used{background:#eef0f3;color:#505861}.ds-expired{background:var(--cb-amber-bg,#fff4db);color:var(--cb-amber,#805000)}"
     },
     {
       "name": "Panneau de formulaire",
       "kind": "card",
-      "description": "Surface de travail bordée sans ombre.",
+      "description": "Surface de travail sans enveloppe crème ni ombre.",
       "html": "<section class=\"ds-panel\"><h2>Préparer le lot</h2><p>Des bons anonymes, prêts à transmettre à la Fondation.</p></section>",
-      "css": ".ds-panel{padding:28px;border:1px solid var(--cb-border,#ded6cc);border-radius:12px;background:var(--cb-surface,#fff);color:var(--cb-ink,#30251f);font:14px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-panel h2{margin:0 0 24px;font-size:19px;line-height:1.4}.ds-panel p{margin:0;color:var(--cb-muted,#665b51)}",
+      "css": ".ds-panel{padding:28px;border:1px solid var(--cb-border,#e3e6e9);border-radius:12px;background:var(--cb-surface,#fff);color:var(--cb-ink,#24282d);font:14px/1.6 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif}.ds-panel h2{margin:0 0 24px;font-size:19px;line-height:1.4}.ds-panel p{margin:0}@media(max-width:600px){.ds-panel{padding:20px}}",
       "refersTo": "panel"
     },
     {
-      "name": "Pagination",
+      "name": "Vues de gestion",
       "kind": "nav",
-      "description": "Liens simples, page courante explicite et retour à la ligne.",
-      "html": "<nav class=\"ds-pagination\" aria-label=\"Pagination\"><span class=\"ds-current\" aria-current=\"page\">1</span><a href=\"#page-2\">2</a><a href=\"#page-2\">Suivant</a></nav>",
-      "css": ".ds-pagination{display:flex;flex-wrap:wrap;gap:8px;font:14px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-pagination a,.ds-current{padding:5px 10px;border-radius:4px}.ds-pagination a{color:var(--cb-link,#9f271b);text-underline-offset:3px}.ds-pagination a:hover{text-decoration-thickness:2px}.ds-pagination a:focus-visible{outline:3px solid var(--cb-ink,#30251f);outline-offset:4px;box-shadow:none}.ds-current{background:var(--cb-ink,#30251f);color:var(--cb-surface,#fff)}"
+      "description": "Onglet courant souligné et compteurs compacts.",
+      "html": "<nav class=\"ds-tabs\" aria-label=\"Vues des bons\"><a href=\"#lots\" aria-current=\"page\">Lots <span>2</span></a><a href=\"#bons\">Tous les bons <span>50</span></a></nav>",
+      "css": ".ds-tabs{display:flex;gap:24px;font:550 14px/1.6 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif}.ds-tabs a{display:flex;align-items:center;gap:8px;padding:8px 0 12px;color:var(--cb-muted,#626971);text-decoration:none;border-bottom:2px solid transparent}.ds-tabs a[aria-current]{color:var(--cb-ink,#24282d);border-color:var(--cb-accent,#bc3022)}.ds-tabs a:hover{color:var(--cb-link,#9f271b)}.ds-tabs a:focus-visible{outline:3px solid var(--cb-ink,#24282d);outline-offset:4px}.ds-tabs span{padding:1px 7px;border-radius:5px;background:#eceff1;color:#505861;font-size:12px;font-variant-numeric:tabular-nums}"
     },
     {
       "name": "Ticket de boutique",
       "kind": "custom",
-      "description": "Verdict et cadeau regroupés dans une surface indépendante du thème.",
-      "html": "<article class=\"ds-ticket\"><header class=\"ds-verdict\"><svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"16\" cy=\"16\" r=\"13\" stroke=\"currentColor\" stroke-width=\"2.5\"/><path d=\"m9 16 4.5 4.5L23 11\" stroke=\"currentColor\" stroke-width=\"2.5\"/></svg><h1>Bon valide</h1><p>Cette boîte peut être remise après votre confirmation.</p></header><section class=\"ds-gift\"><h2>Une boîte de 4 cookies</h2><p>Valeur 20 CHF · Retrait en boutique</p></section></article>",
-      "css": ".ds-ticket{max-width:520px;border:1px solid var(--cb-border,#ded6cc);border-radius:16px;overflow:hidden;background:var(--cb-surface,#fff);color:var(--cb-ink,#30251f);font:16px/1.6 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-verdict{padding:28px;background:var(--cb-green-bg,#eaf5ee);color:var(--cb-green,#16643b)}.ds-verdict svg{display:block;margin-bottom:16px}.ds-verdict h1{margin:0 0 12px;font-size:30px;line-height:1.2;letter-spacing:-.02em}.ds-verdict p{margin:0;max-width:44ch}.ds-gift{padding:28px}.ds-gift h2{margin:0 0 8px;font-size:22px;line-height:1.3}.ds-gift p{margin:0;color:var(--cb-muted,#665b51);font-size:14px}@media(max-width:600px){.ds-verdict,.ds-gift{padding:24px}.ds-verdict h1{font-size:28px}}",
+      "description": "Boutique toujours claire ; réussite en vert plein et texte blanc, refus rouge, expiration ambre.",
+      "html": "<article class=\"ds-ticket\"><header class=\"ds-verdict\"><h1>Bon valide</h1><p>Cette boîte peut être remise après votre confirmation.</p></header><section class=\"ds-gift\"><h2>Une boîte de 4 cookies</h2><p>Valeur 20 CHF · Retrait en boutique</p></section></article>",
+      "css": ".ds-ticket{max-width:520px;border:1px solid #e3e6e9;border-radius:16px;overflow:hidden;background:#fff;color:#24282d;font:16px/1.6 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif}.ds-verdict{padding:28px;background:#eaf5ee;color:#16643b}.ds-verdict h1{margin:0 0 12px;font-size:30px;line-height:1.2;letter-spacing:-.02em}.ds-verdict p{margin:0;max-width:44ch}.ds-gift{padding:28px}.ds-gift h2{margin:0 0 8px;font-size:22px;line-height:1.3}.ds-gift p{margin:0;color:#626971;font-size:14px}@media(max-width:600px){.ds-verdict,.ds-gift{padding:24px}.ds-verdict h1{font-size:28px}}",
       "refersTo": "ticket"
+    },
+    {
+      "name": "Lecture caméra et référence",
+      "kind": "custom",
+      "description": "Aperçu initial sans caméra active ; exemple visuel, sans démarrage ou soumission réels.",
+      "html": "<section class=\"ds-camera\"><div class=\"ds-preview\"><strong>Le QR code face à la caméra</strong><span>Sur téléphone ou sur papier</span></div><button class=\"ds-btn ds-open\">Ouvrir la caméra</button><p class=\"ds-camera-note\">La caméra s’ouvre uniquement à votre demande.</p></section><form class=\"ds-manual\"><label for=\"ds-reference\">Référence du bon</label><div class=\"ds-manual-row\"><input id=\"ds-reference\" placeholder=\"COOMS-XXXXXXXXXX\"><button class=\"ds-btn ds-secondary\">Vérifier le bon</button></div></form>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 16px;border:1px solid transparent;border-radius:8px;background:var(--cb-accent,#bc3022);color:#fff;font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;font-size:14px;font-weight:600;line-height:1.5;text-align:center;text-decoration:none;cursor:pointer;white-space:normal}.ds-btn:hover{background:var(--cb-accent-hover,#9f271b);color:#fff}.ds-btn:focus-visible{outline:3px solid var(--cb-ink,#24282d);outline-offset:4px}.ds-btn:disabled{opacity:.65;cursor:wait}@media(max-width:600px){.ds-btn{min-height:44px}}.ds-secondary{background:var(--cb-surface,#fff);color:var(--cb-ink,#24282d);border-color:var(--cb-border,#e3e6e9)}.ds-secondary:hover{background:var(--cb-paper,#f6f7f8);color:var(--cb-ink,#24282d);border-color:var(--cb-ink,#24282d)}.ds-camera{padding:16px;border:1px solid #e3e6e9;border-radius:16px;background:#fff;color:#24282d;font:16px/1.6 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif}.ds-preview{aspect-ratio:4/3;border-radius:10px;background:#edf0f2;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;text-align:center;color:#58616a}.ds-preview strong{font-size:17px;color:#24282d}.ds-preview span{font-size:14px}.ds-open{width:100%;min-height:52px;margin-top:16px;font-size:16px}.ds-camera-note{font-size:13px;color:#626971;min-height:42px;margin:12px 0 0}.ds-manual{margin-top:28px;padding-top:24px;border-top:1px solid #e3e6e9;font:550 13px/1.6 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;color:#24282d}.ds-manual label{display:block;margin-bottom:6px}.ds-manual-row{display:flex;gap:10px}.ds-manual input{width:100%;min-width:0;min-height:48px;padding:10px 12px;border:1px solid #e3e6e9;border-radius:8px;background:#fff;color:#24282d;font:16px ui-monospace,SFMono-Regular,Consolas,monospace}.ds-manual .ds-btn{min-height:48px;flex-shrink:0}.ds-manual input:focus-visible{outline:3px solid #24282d;outline-offset:4px}@media(max-width:600px){.ds-camera{padding:12px}.ds-manual-row{flex-direction:column}.ds-open{min-height:52px}.ds-manual .ds-btn{min-height:48px}}"
     }
   ],
   "narrative": {
     "northStar": "Le registre de boutique",
-    "overview": "Une interface calme, précise et familière, issue de la clarté des éditions suisses de recettes. Le papier crème, l’encre brune et la répétition des alignements donnent une présence COOMS sans détourner l’attention des actions. La gestion conserve le cadre WordPress ; l’écran de remise a sa propre mise en page, indépendante du thème.\n\nLe système privilégie une lecture immédiate, des contrôles natifs et des états écrits en français. Il ne requiert ni image décorative ni police externe. La simplicité et le fonctionnement prévisible guident les choix.",
+    "overview": "Une interface de travail neutre, précise et familière, accordée à AdminKit en gestion et autonome en boutique. Les surfaces blanches, le texte graphite et les alignements répétés facilitent la lecture des lots et des retraits. Le rouge COOMS signale les actions principales ; la typographie système et les contrôles natifs gardent le produit simple et maintenable.\n\nLe grand panneau crème et le formulaire décoratif ont été rejetés par l’utilisateur. Le système 1.1 privilégie un espace fluide et des panneaux utiles, sans image décorative ni police externe.",
     "keyCharacteristics": [
-      "Hiérarchie courte et espace utile.",
-      "Accent rouge pour les actions de gestion, vert pour la remise disponible.",
-      "Surfaces plates, bordures discrètes et chiffres tabulaires.",
-      "Statuts formulés en toutes lettres et confirmation explicite."
+      "Surfaces neutres et plates, bordures fines.",
+      "Gestion dense et lisible ; boutique tactile et directe.",
+      "Statuts écrits, chiffres tabulaires et références en chasse fixe.",
+      "Lecture du bon et confirmation de remise distinctes."
     ],
     "rules": [
       {
-        "name": "The Written State Rule",
-        "body": "Un état est toujours nommé ; la couleur seule ne porte jamais sa signification.",
+        "name": "The Host Palette Rule",
+        "body": "En gestion seulement, reprendre `--ak-surface-muted`, `--ak-surface`, `--ak-text`, `--ak-text-muted` et `--ak-border` si présents. Les valeurs de secours restent utilisables sans AdminKit. Le lien sombre est distinct du survol du bouton rouge, qui garde son texte blanc. Les écrans boutique restent clairs, indépendants du thème.",
         "section": "colors"
       },
       {
-        "name": "The Flat Surface Rule",
-        "body": "La profondeur provient du contraste des surfaces et des séparateurs.",
-        "section": "elevation"
+        "name": "The Lookup Rule",
+        "body": "Le scan et la référence consultent le bon ; seul « Valider la remise de la boîte » enregistre le retrait. Ce bouton vert, pleine largeur et de (56px) minimum, expose le caractère définitif de l’action puis son chargement. Les états de fiche sont : valide, déjà utilisé, remise enregistrée, expiré, introuvable, connexion requise et accès refusé. Une erreur de mutation propose d’actualiser le statut.",
+        "section": "components"
       }
     ],
     "dos": [
-      "Do conserver les contrôles familiers et les libellés explicites en français.",
-      "Do associer chaque état à un texte, même avec un pictogramme.",
-      "Do préserver les chiffres tabulaires, le focus visible et le défilement local des tableaux.",
-      "Do réserver le vert de l’action de boutique à la remise et sa confirmation."
+      "Do conserver les contrastes et les libellés explicites dans chaque état.",
+      "Do conserver les références et les URLs des bons existants.",
+      "Do garder la saisie manuelle disponible après une erreur de caméra.",
+      "Do utiliser les variables AdminKit avec leurs valeurs de secours en gestion."
     ],
     "donts": [
-      "Don’t ajouter d’emoji de statut, d’ombre décorative ou de dépendance à une police externe.",
-      "Don’t confondre le rouge de marque et une erreur sans libellé explicite.",
-      "Don’t montrer une réussite avant la réponse de confirmation du serveur.",
-      "Don’t faire dépendre la présentation boutique du thème ou d’AdminKit."
+      "Don’t réintroduire le grand panneau crème ou un habillage décoratif du formulaire.",
+      "Don’t demander la caméra à l’arrivée ni relancer automatiquement après une pause.",
+      "Don’t ouvrir une URL QR externe ou enregistrer un retrait au simple scan.",
+      "Don’t collecter le nom ou l’e-mail du bénéficiaire dans les parcours de bons.",
+      "Don’t présenter les captures et essais virtuels comme une recette sur iPhone physique ou une certification de sécurité."
     ]
   }
 }

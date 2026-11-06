@@ -5,9 +5,9 @@
 - Vérifier les versions PHP/WordPress et les extensions GD/FreeType/ZIP sur le serveur final.
 - Confirmer HTTPS, domaine définitif, sauvegarde de la base et du code.
 - Installer le ZIP de release avec dépendances. Vérifier les tables InnoDB et les rôles.
-- Exclure `cooms_bon` de tous les caches/CDN et de la collecte des URLs analytiques.
+- Exclure `cooms_bon` et `cooms_scan` de tous les caches/CDN et de la collecte des URLs analytiques.
 - Créer les accès vendeurs et vérifier les permissions depuis leurs comptes.
-- Faire la recette avec l’appareil réel : caméra → navigateur connecté → bon valide → confirmation → nouveau scan utilisé ; image sur smartphone et impression papier.
+- Vérifier HTTPS pour la caméra intégrée, puis faire la recette avec l’appareil réel : menu Scanner → autorisation caméra → bon valide → confirmation → nouveau scan utilisé ; image sur smartphone et impression papier.
 - Tester une expiration, une absence de droit et une perte de connexion ; contrôler le CSV et les totaux.
 - Retirer les seules données de recette avant la première génération réelle (opération de maintenance ciblée, jamais TRUNCATE sur un site actif).
 
