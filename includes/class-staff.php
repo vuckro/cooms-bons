@@ -98,6 +98,7 @@ final class Staff {
         set_transient('cooms_staff_' . get_current_user_id() . '_' . $key, [
             'error' => is_wp_error($result), 'message' => is_wp_error($result) ? $result->get_error_message() : $message,
             'name' => is_wp_error($result) ? mb_substr($name, 0, 100) : '', 'email' => is_wp_error($result) ? substr($email, 0, 100) : '',
+            'invite' => isset($_POST['send_invitation']) && $_POST['send_invitation'] === '1',
         ], 600);
         wp_safe_redirect(add_query_arg(['page' => 'cooms-bons-staff', 'feedback' => $key], admin_url('admin.php')), 303);
         exit;
