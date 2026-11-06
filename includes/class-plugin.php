@@ -39,6 +39,12 @@ final class Plugin {
         $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
         if (!in_array($page, ['cooms-bons', 'cooms-bons-new', 'cooms-bons-help'], true)) { return; }
         wp_enqueue_style('cooms-bons', plugins_url('assets/cooms.css', COOMS_BONS_FILE), [], COOMS_BONS_VERSION);
+        // Optional host bridge: never make the standalone plugin depend on AdminKit.
+        $design_deps = ['cooms-bons'];
+        foreach (['adminkit-tokens', 'adminkit-component-tokens'] as $handle) {
+            if (wp_style_is($handle, 'enqueued')) { $design_deps[] = $handle; }
+        }
+        wp_enqueue_style('cooms-bons-adminkit', plugins_url('assets/adminkit.css', COOMS_BONS_FILE), $design_deps, COOMS_BONS_VERSION);
         wp_enqueue_script('cooms-bons', plugins_url('assets/cooms.js', COOMS_BONS_FILE), [], COOMS_BONS_VERSION, true);
     }
 

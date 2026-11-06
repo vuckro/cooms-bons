@@ -153,7 +153,7 @@ La palette neutre conserve un seul accent de marque rouge ; les couleurs fonctio
 - **Graphite** (`ink`) et **Texte secondaire** (`muted`) : titres, contenu et aides.
 - **Retrait enregistré** (`used`, `used-bg`) : badge « Retiré » neutre dans la gestion ; un retrait accompli n’est pas une erreur du tableau.
 
-**The Host Palette Rule.** En gestion seulement, reprendre `--ak-surface-muted`, `--ak-surface`, `--ak-text`, `--ak-text-muted` et `--ak-border` si présents. Les valeurs de secours restent utilisables sans AdminKit. Le lien sombre est distinct du survol du bouton rouge, qui garde son texte blanc. Les écrans boutique restent clairs, indépendants du thème.
+**The Host Palette Rule.** Le pont `assets/adminkit.css`, chargé uniquement sur les pages de gestion, consomme les rôles `--ak-*` lorsque `body.adminkit` est présent : surfaces, textes, accent et son contraste, succès/erreur/expiration, polices, rayons, densité et focus. AdminKit reste propriétaire de ses tokens, de ses polices et de `data-adminkit-theme`. Aucun token global n’est redéfini. Sans AdminKit, `cooms.css` fournit le système autonome ; la boutique conserve son système clair indépendant.
 
 ## Typography
 
@@ -214,7 +214,7 @@ Onglets « Lots » / « Tous les bons », soulignement rouge de l’onglet coura
 
 La caméra est inactive à l’arrivée. « Ouvrir la caméra » est une action de (52px) minimum. Pendant la demande, l’état est annoncé et « Annuler l’ouverture » reste disponible ; en lecture, le bouton devient « Arrêter la caméra ». Refus de permission, absence de caméra, incompatibilité, lecteur non chargé et QR extérieur affichent une explication ; la référence manuelle demeure accessible. Sans JavaScript, la recherche manuelle reste disponible.
 
-**The Lookup Rule.** Le scan et la référence consultent le bon ; seul « Valider la remise de la boîte » enregistre le retrait. Ce bouton vert, pleine largeur et de (56px) minimum, expose le caractère définitif de l’action puis son chargement. Les états de fiche sont : valide, déjà utilisé, remise enregistrée, expiré, introuvable, connexion requise et accès refusé. Une erreur de mutation propose d’actualiser le statut.
+**The Lookup Rule.** Le scan et la référence consultent le bon ; seul « Valider la remise du cadeau » enregistre le retrait. Ce bouton vert, pleine largeur et de (56px) minimum, expose le caractère définitif de l’action puis son chargement. Les états de fiche sont : valide, déjà utilisé, remise enregistrée, expiré, introuvable, connexion requise et accès refusé. Une erreur de mutation propose d’actualiser le statut.
 
 Après un retrait, un bon déjà utilisé ou expiré, « Scanner le bon suivant » est un bouton secondaire pleine largeur de (52px) minimum. Sur un bon disponible, « Retour au scanner » reste un lien discret afin de préserver la priorité de confirmation.
 
@@ -240,3 +240,8 @@ La caméra s’arrête avant la navigation et la recherche, à l’annulation, �
 ### Personnalisation du lot (1.2)
 
 Le formulaire présente nom, quantité, cadeau et date de fin de validité. Les valeurs par défaut restent le cadeau historique et six mois. L’aperçu reflète immédiatement le texte et la date ; une erreur serveur conserve les champs et la clé de soumission, dans un message du formulaire. La date est incluse en heure de Genève. Les intitulés longs se replient dans l’aperçu et le retrait, et sont composés sur plusieurs lignes dans le PNG.
+
+
+### Intégration AdminKit (1.2.1)
+
+Le pont est chargé après les feuilles AdminKit déjà en file, sans dépendance obligatoire au plugin hôte. Les boutons utilisent `--ak-primary`, `--ak-on-accent` et leurs états de survol ; les secondaires utilisent `--ak-btn-*`. Le focus suit le double anneau `--ak-focus-ring`. Les champs suivent `--ak-input-bg` / `--ak-input-border`, les polices `--ak-font-body` / `--ak-font-mono`, les rayons `--ak-radius-*`. Densité native de 32px par défaut sur bureau (`--ak-control-height`), cible tactile d’au moins 44px sous 783px (`--ak-control-height-touch`). La taille de saisie mobile reste au moins 16px. Les statuts utilisent leurs rôles texte et fond sémantiques, et « Retiré » reste neutre. Le thème sombre applique aussi `color-scheme: dark` aux contrôles natifs. Les valeurs du frontmatter décrivent le secours sans AdminKit.

@@ -90,3 +90,8 @@ La recette physique avec le matériel de caisse reste nécessaire avant la mise 
 ## Hors périmètre
 
 Lightspeed, paiements, WooCommerce, FluentBooking, e-mails bénéficiaires, PDF additionnel, PIN partagé, fonctionnement hors ligne.
+
+
+### Design system AdminKit
+
+COOMS Bons consomme automatiquement les tokens sémantiques AdminKit dans sa gestion : thème clair/sombre, accent configuré, contraste des boutons, Geist/Geist Mono, champs, rayons, statuts et focus. Le pont `assets/adminkit.css` est isolé sous `body.adminkit .cb-app`, chargé seulement sur les pages COOMS et sans dépendance obligatoire. AdminKit conserve la propriété de ses réglages et variables. Sans AdminKit, le plugin garde son design autonome. Le scanner boutique et les images exportées restent indépendants du thème d’administration.
