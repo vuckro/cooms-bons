@@ -328,6 +328,15 @@
       "validity": "inclusive Geneva date; six months proposed",
       "preview": "live gift and date; server-side validation with retained input",
       "csv": "gift appended as seventh column"
+    },
+    "adminKitIntegration": {
+      "stylesheet": "assets/adminkit.css",
+      "scope": "body.adminkit .cb-app",
+      "source": "AdminKit --ak-* semantic roles",
+      "themeOwner": "AdminKit data-adminkit-theme",
+      "desktopControl": "--ak-control-height",
+      "touchControl": "--ak-control-height-touch below 783px",
+      "fallback": "cooms.css standalone; boutique isolated"
     }
   },
   "components": [
@@ -421,12 +430,12 @@
     "rules": [
       {
         "name": "The Host Palette Rule",
-        "body": "En gestion seulement, reprendre `--ak-surface-muted`, `--ak-surface`, `--ak-text`, `--ak-text-muted` et `--ak-border` si présents. Les valeurs de secours restent utilisables sans AdminKit. Le lien sombre est distinct du survol du bouton rouge, qui garde son texte blanc. Les écrans boutique restent clairs, indépendants du thème.",
+        "body": "En gestion, le pont `assets/adminkit.css` consomme les rôles sémantiques AdminKit sous `body.adminkit .cb-app` : surfaces, textes, accent, statuts, polices, contrôles, rayons et focus. Les valeurs de secours restent utilisables sans AdminKit. Le lien sombre est distinct du survol du bouton rouge, qui garde son texte blanc. Les écrans boutique restent clairs, indépendants du thème.",
         "section": "colors"
       },
       {
         "name": "The Lookup Rule",
-        "body": "Le scan et la référence consultent le bon ; seul « Valider la remise de la boîte » enregistre le retrait. Ce bouton vert, pleine largeur et de (56px) minimum, expose le caractère définitif de l’action puis son chargement. Les états de fiche sont : valide, déjà utilisé, remise enregistrée, expiré, introuvable, connexion requise et accès refusé. Une erreur de mutation propose d’actualiser le statut.",
+        "body": "Le scan et la référence consultent le bon ; seul « Valider la remise du cadeau » enregistre le retrait. Ce bouton vert, pleine largeur et de (56px) minimum, expose le caractère définitif de l’action puis son chargement. Les états de fiche sont : valide, déjà utilisé, remise enregistrée, expiré, introuvable, connexion requise et accès refusé. Une erreur de mutation propose d’actualiser le statut.",
         "section": "components"
       }
     ],

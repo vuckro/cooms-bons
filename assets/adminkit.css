@@ -1,0 +1,120 @@
+/* Optional wp-admin bridge. AdminKit owns tokens, theme and font loading.
+ * No root overrides, copied palette, theme switcher or public scanner styles. */
+body.adminkit .cb-app {
+  --cb-paper: var(--ak-surface-muted, #f6f7f8);
+  --cb-surface: var(--ak-surface, #fff);
+  --cb-ink: var(--ak-text, #24282d);
+  --cb-muted: var(--ak-text-muted, #626971);
+  --cb-border: var(--ak-border, #e3e6e9);
+  --cb-accent: var(--ak-primary, #bc3022);
+  --cb-accent-hover: var(--ak-primary-hover, #9f271b);
+  --cb-link: var(--ak-primary-text, #9f271b);
+  --cb-green: var(--ak-success, #16643b);
+  --cb-green-bg: var(--ak-success-subtle, #eaf5ee);
+  --cb-red: var(--ak-error, #9e2828);
+  --cb-red-bg: var(--ak-error-subtle, #fbeeed);
+  --cb-amber: var(--ak-warning, #805000);
+  --cb-amber-bg: var(--ak-warning-subtle, #fff4db);
+  font-family: var(--ak-font-body, inherit);
+  font-size: var(--ak-text-m, 14px);
+}
+body.adminkit .cb-app :is(h1, h2, h3) {
+  color: var(--ak-heading, var(--cb-ink));
+}
+body.adminkit .cb-app p { font-size: inherit; }
+body.adminkit .cb-app :is(.cb-row-meta, .cb-table thead th, .cb-status) {
+  font-size: var(--ak-text-xs, 12px);
+}
+body.adminkit .cb-app :is(.cb-field p, .cb-section-heading p, .cb-submission-note, .cb-counts dt, .cb-download) {
+  font-size: var(--ak-text-s, 13px);
+}
+body.adminkit .cb-app .cb-table { font-size: var(--ak-text-m, 14px); }
+body.adminkit .cb-app .cb-reference {
+  font-family: var(--ak-font-mono, ui-monospace, monospace);
+}
+body.adminkit .cb-app .cb-work {
+  background: var(--ak-card-bg, var(--cb-surface));
+  border-color: var(--ak-card-border, var(--cb-border));
+  border-radius: var(--ak-card-radius, 12px);
+}
+body.adminkit .cb-app .cb-table thead th {
+  background: var(--ak-table-header-bg, var(--cb-paper));
+}
+body.adminkit .cb-app .cb-table tbody tr:hover {
+  background: var(--ak-hover-bg, var(--cb-paper));
+}
+body.adminkit .cb-app :is(.cb-tabs a span, .cb-used) {
+  background: var(--cb-paper);
+  color: var(--cb-muted);
+}
+body.adminkit .cb-app :is(.cb-notice, .cb-error, .cb-created) {
+  border-radius: var(--ak-radius-s, 8px);
+}
+body.adminkit .cb-app .cb-created :is(h2, p) { color: var(--cb-green); }
+body.adminkit .cb-app .cb-button {
+  min-height: var(--ak-control-height, 32px);
+  padding: var(--ak-space-xs, 4px) var(--ak-space-m, 12px);
+  border-radius: var(--ak-radius-s, 8px);
+  font-size: var(--ak-text-s, 13px);
+  background: var(--cb-accent);
+  color: var(--ak-on-accent, #fff);
+  box-shadow: var(--ak-btn-primary-shadow, none);
+}
+body.adminkit .cb-app .cb-button:hover {
+  background: var(--cb-accent-hover);
+  color: var(--ak-on-accent-hover, #fff);
+  box-shadow: var(--ak-btn-primary-shadow-hover, none);
+}
+body.adminkit .cb-app .cb-button.cb-secondary {
+  background: var(--ak-btn-bg, var(--cb-surface));
+  color: var(--ak-btn-text, var(--cb-ink));
+  border-color: var(--ak-btn-border, var(--cb-border));
+  box-shadow: none;
+}
+body.adminkit .cb-app .cb-button.cb-secondary:hover {
+  background: var(--ak-btn-hover-bg, var(--cb-paper));
+  color: var(--cb-ink);
+  border-color: var(--ak-btn-hover-border, var(--cb-border));
+}
+body.adminkit .cb-app .cb-button:disabled {
+  opacity: 1;
+  background: var(--cb-paper);
+  border-color: var(--cb-border);
+  color: var(--ak-text-disabled, var(--cb-muted));
+  box-shadow: none;
+}
+body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"]),
+body.adminkit .cb-app .cb-work .cb-filters select {
+  min-height: var(--ak-control-height, 32px);
+  padding-block: var(--ak-space-xs, 4px);
+  border-radius: var(--ak-radius-s, 8px);
+  background-color: var(--ak-input-bg, var(--cb-surface));
+  border-color: var(--ak-input-border, var(--cb-border));
+  font-size: var(--ak-text-s, 13px);
+}
+body.adminkit .cb-app input::placeholder { color: var(--ak-text-subtle, var(--cb-muted)); }
+body.adminkit .cb-app :focus-visible,
+body.adminkit .cb-app .cb-field input:focus-visible,
+body.adminkit .cb-app .cb-work .cb-filters select:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--ak-focus-ring, 0 0 0 2px var(--cb-ink));
+}
+body.adminkit .cb-app .cb-field input:focus-visible,
+body.adminkit .cb-app .cb-work .cb-filters select:focus-visible {
+  border-color: var(--ak-focus, var(--cb-ink));
+}
+body.adminkit .cb-app ::selection {
+  background: var(--ak-primary-subtle, var(--cb-paper));
+  color: var(--ak-heading, var(--cb-ink));
+}
+body.adminkit .cb-app { color-scheme: light; }
+:root[data-adminkit-theme="dark"] body.adminkit .cb-app { color-scheme: dark; }
+@media (max-width: 782px) {
+  body.adminkit .cb-app .cb-button,
+  body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"]),
+  body.adminkit .cb-app .cb-work .cb-filters select {
+    min-height: var(--ak-control-height-touch, 44px);
+    font-size: max(16px, var(--ak-text-m, 14px));
+  }
+}

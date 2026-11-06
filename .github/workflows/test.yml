@@ -82,9 +82,9 @@ jobs:
         run: |
           test -L /tmp/cooms-wordpress/wp-content/plugins/cooms-bons
           unlink /tmp/cooms-wordpress/wp-content/plugins/cooms-bons
-          wp plugin install "$GITHUB_WORKSPACE/dist/cooms-bons-1.2.0.zip" --activate --path=/tmp/cooms-wordpress
+          wp plugin install "$GITHUB_WORKSPACE/dist/cooms-bons-1.2.1.zip" --activate --path=/tmp/cooms-wordpress
           wp eval-file "$GITHUB_WORKSPACE/tests/integration.php" --path=/tmp/cooms-wordpress
       - uses: actions/upload-artifact@v4
         with:
           name: cooms-bons-php-${{ matrix.php }}
-          path: dist/cooms-bons-1.2.0.zip
+          path: dist/cooms-bons-1.2.1.zip

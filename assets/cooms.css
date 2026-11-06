@@ -1207,24 +1207,6 @@ body.cb-scan {
     min-height: 44px;
   }
 }
-/* Inherit the host palette when available, with standalone WordPress fallbacks. */
-.cb-app {
-  --cb-paper: var(--ak-surface-muted, #f6f7f8);
-  --cb-surface: var(--ak-surface, #fff);
-  --cb-ink: var(--ak-text, #24282d);
-  --cb-muted: var(--ak-text-muted, #626971);
-  --cb-border: var(--ak-border, #e3e6e9);
-}
-.cb-app .cb-counts dd a:hover {
-  color: var(--cb-link);
-}
-.cb-app .cb-created h2,
-.cb-app .cb-created p {
-  color: var(--cb-green);
-}
-:root[data-adminkit-theme="dark"] .cb-app {
-  --cb-link: #ff9386;
-}
 .cb-scan .cb-ticket-actions > .cb-next-scan.cb-button {
   display: flex;
   width: 100%;
