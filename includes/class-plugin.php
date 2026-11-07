@@ -4,6 +4,7 @@ defined('ABSPATH') || exit;
 
 final class Plugin {
     public function boot(): void {
+        add_filter('plugin_row_meta', [$this, 'metadata'], 10, 2);
         add_filter('woocommerce_prevent_admin_access', [$this, 'allow_seller_pages']);
         add_action('admin_menu', [$this, 'menu']);
         add_action('admin_enqueue_scripts', [$this, 'assets']);
@@ -11,6 +12,14 @@ final class Plugin {
         add_action('admin_post_cooms_description', [$this, 'description']);
         add_action('admin_post_cooms_export', [$this, 'export']);
         add_action('template_redirect', [$this, 'scan'], -100);
+    }
+
+    public function metadata(array $links, string $file): array {
+        if ($file !== plugin_basename(COOMS_BONS_FILE)) { return $links; }
+        $repository = 'https://github.com/vuckro/cooms-bons';
+        $links = array_values(array_filter($links, static fn($link) => !str_contains($link, $repository)));
+        $links[] = '<a href="' . esc_url($repository) . '">GitHub</a>';
+        return $links;
     }
 
     /** WooCommerce normally redirects accounts without edit_posts to My Account. */
