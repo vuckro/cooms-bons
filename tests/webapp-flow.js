@@ -24,6 +24,7 @@ async (page, fixture) => {
     const a=error.getBoundingClientRect(),b=document.querySelector('.cb-camera-section').getBoundingClientRect();
     return Math.abs(a.left-b.left)<1&&Math.abs(a.width-b.width)<1;
   }),'Invalid-reference feedback aligns with the camera panel');
+  await page.goto(base + '/?cooms_scan=1');
   await page.context().setOffline(true);
   await page.waitForFunction(() => !navigator.onLine);
   await page.locator('[data-connection]').waitFor();
