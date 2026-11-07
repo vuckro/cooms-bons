@@ -201,7 +201,14 @@ final class Store {
         [$where, $args] = self::where($lot, $status, $at);
         $b = self::table('bons'); $l = self::table('lots');
         $args[] = max(1, $limit); $args[] = max(0, $offset);
-        return $wpdb->get_results($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title FROM $b b INNER JOIN $l l ON b.lot_id=l.id WHERE $where ORDER BY b.id DESC LIMIT %d OFFSET %d", $args));
+        return $wpdb->get_results($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title, u.display_name AS redeemer_name FROM $b b INNER JOIN $l l ON b.lot_id=l.id LEFT JOIN {$wpdb->users} u ON u.ID=b.redeemed_by WHERE $where ORDER BY b.id DESC LIMIT %d OFFSET %d", $args));
+    }
+
+    /** Attribution is private to management; deleted accounts retain their audit ID. */
+    public static function redeemer_label(object $bon): string {
+        if (!$bon->redeemed_at) { return ''; }
+        if (!empty($bon->redeemer_name)) { return $bon->redeemer_name; }
+        return $bon->redeemed_by ? 'Compte supprimé (#' . (int) $bon->redeemed_by . ')' : 'Non renseigné';
     }
 
     public static function counts(int $lot = 0): array {

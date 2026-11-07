@@ -149,6 +149,11 @@ try {
 
     $check(Store::redeem($bons[2]->token)['result'] === 'success', 'Seller may redeem');
     $check((int) Store::find($bons[2]->token)->redeemed_by === $seller_id, 'Seller recorded');
+    $attributed = array_values(array_filter(Store::bons($id), static fn($row) => $row->token === $bons[2]->token))[0];
+    $check(Store::redeemer_label($attributed) === get_userdata($seller_id)->display_name, 'Management lists the actual employee who redeemed');
+    $deleted_account = clone $attributed; $deleted_account->redeemer_name = null;
+    $check(Store::redeemer_label($deleted_account) === 'Compte supprimé (#' . $seller_id . ')', 'Deleted employee keeps identifiable audit attribution');
+    $check(Store::redeemer_label($bons[3]) === '', 'Available voucher has no employee attribution');
     wp_set_current_user(0);
     $check(Store::redeem($bons[3]->token)['result'] === 'forbidden', 'Anonymous redemption refused');
     $check(Scanner::resolve($bons[3]->code) === null && Store::find_code($bons[3]->code) === null, 'Anonymous manual lookup refused');

@@ -79,11 +79,11 @@ Voir [la procédure](docs/DEPLOIEMENT.md). La copie locale est une recette, pas 
 
 ## Tests
 
-Sur une **copie locale uniquement** : `wp eval-file tests/integration.php` (94 assertions métier ; crée et retire ses seules données de test). Suite HTTP reproductible sur localhost (66 contrôles supplémentaires) : `wp eval-file tests/prepare-http.php`, puis `python3 tests/http_checks.py`, enfin `wp eval-file tests/cleanup-http.php`, même en cas d’échec. Elle crée ses propres comptes temporaires et lot, vérifie les accès, ZIP, CSV et six validations concurrentes. Le fichier `output/http-fixture.json` contient des cookies éphémères : il est privé, ignoré par Git et supprimé au nettoyage. GitHub Actions exécute ces tests avec PHP 8.1, 8.3 et 8.4. Les captures mobiles/tablettes et le décodage Apple Vision complètent cette suite. Le test Swift optionnel `swift tests/decode-qr.swift chemin/bon.png` vérifie le décodage d’un PNG sous macOS.
+Sur une **copie locale uniquement** : `wp eval-file tests/integration.php` (97 assertions métier ; crée et retire ses seules données de test). Suite HTTP reproductible sur localhost (68 contrôles supplémentaires) : `wp eval-file tests/prepare-http.php`, puis `python3 tests/http_checks.py`, enfin `wp eval-file tests/cleanup-http.php`, même en cas d’échec. Elle crée ses propres comptes temporaires et lot, vérifie les accès, ZIP, CSV et six validations concurrentes. Le fichier `output/http-fixture.json` contient des cookies éphémères : il est privé, ignoré par Git et supprimé au nettoyage. GitHub Actions exécute ces tests avec PHP 8.1, 8.3 et 8.4. Les captures mobiles/tablettes et le décodage Apple Vision complètent cette suite. Le test Swift optionnel `swift tests/decode-qr.swift chemin/bon.png` vérifie le décodage d’un PNG sous macOS.
 
 ## Recette caméra et responsive
 
-Après les tests HTTP et avant leur nettoyage : `wp eval-file tests/prepare-camera.php`, puis `python3 tests/browser_checks.py`. Nécessite Chrome, ffmpeg et Playwright CLI. Le script ouvre et ferme sa propre session dédiée, utilise une vidéo virtuelle d’un PNG réellement exporté et ne touche pas la caméra physique. `PWCLI` permet de définir le chemin du CLI. Les 52 contrôles couvrent le décodage, la fermeture des pistes, la remise, le bon suivant, la saisie manuelle, les permissions refusées, l’absence de caméra, HTTP non sécurisé, annulation tardive et débordements responsive. Ces tests sont exécutés dans le job PHP 8.3 de GitHub Actions.
+Après les tests HTTP et avant leur nettoyage : `wp eval-file tests/prepare-camera.php`, puis `python3 tests/browser_checks.py`. Nécessite un moteur Chromium de test, ffmpeg et Playwright CLI. `PW_BROWSER_CHANNEL` et `PW_BROWSER_EXECUTABLE` permettent de choisir le navigateur installé. Le script ouvre et ferme sa propre session dédiée, utilise une vidéo virtuelle d’un PNG réellement exporté et ne touche pas la caméra physique. `PWCLI` permet de définir le chemin du CLI. Les 52 contrôles couvrent le décodage, la fermeture des pistes, la remise, le bon suivant, la saisie manuelle, les permissions refusées, l’absence de caméra, HTTP non sécurisé, annulation tardive et débordements responsive. Ces tests sont exécutés dans le job PHP 8.3 de GitHub Actions.
 
 La recette physique avec le matériel de caisse reste nécessaire avant la mise en production. Le tutoriel vidéo1.1 montre les nouvelles pages et le scanner intégré ; voir [le guide du tutoriel](docs/TUTORIEL-1.1.md). Le tutoriel1.0 est conservé pour l’historique.
 
@@ -116,3 +116,9 @@ Zones de sécurité de l’iPhone, hauteur de viewport mobile, portrait/paysage,
 ### Géométrie caméra (1.4.1)
 
 La largeur de l’aperçu est explicite (`width:100%`) : son ratio ne peut plus le rétrécir lorsque la hauteur est plafonnée. Les contrôles navigateur comparent aussi les bords et la largeur de l’aperçu à ceux du bouton caméra, le centrage du texte dans le panneau et les dimensions de la vidéo active. Voir `docs/RECETTE-1.4.1.md`.
+
+### Identité COOMS et attribution des retraits (1.5)
+
+Le logotype officiel est embarqué dans le plugin : bons PNG, en-têtes boutique, favicon et icônes installables. Palette rouge/crème du site COOMS ; la zone QR reste noire sur blanc, sans logo superposé. Les téléchargements ZIP des lots existants adoptent aussi cette présentation. L’administration conserve les tokens AdminKit.
+
+Les listes de bons affichent « Validé par ». Le CSV conserve ses sept premières colonnes et ajoute le nom du compte ayant confirmé le retrait en huitième position. Un compte supprimé reste identifié par son numéro ; un compte partagé affichera le nom du compte partagé. Ces noms ne sont jamais imprimés sur les bons ni affichés aux bénéficiaires.

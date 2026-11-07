@@ -4,7 +4,7 @@ Tags: qr-code, gift-vouchers
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.4.1
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,11 @@ Non. Seule la confirmation explicite d’un vendeur autorisé enregistre la remi
 Non. Les données sont conservées pour préserver le rapprochement des retraits.
 
 == Changelog ==
+
+= 1.5.0 =
+* Identité officielle COOMS sur les bons, le scanner et les icônes webapp.
+* Attribution des retraits à l’employé dans les listes et le CSV.
+* Libellé « Installer l’application ».
 
 = 1.4.1 =
 * Alignement de l’aperçu caméra sur toute la largeur du panneau et contrôles visuels de géométrie étendus.
