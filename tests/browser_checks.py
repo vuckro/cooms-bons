@@ -35,7 +35,7 @@ try:
  run('state-load',str(state_path))
  result=run('run-code',code)
  summary=json.loads(result.split('### Result',1)[1].split('### Ran Playwright code',1)[0].strip())
- assert summary['passed']==52 and len(summary['checks'])==52, 'Incomplete browser test result'
+ assert summary['passed']==53 and len(summary['checks'])==53, 'Incomplete browser test result'
  print(json.dumps(summary,ensure_ascii=False,indent=2))
 finally:
  subprocess.run([cli,'-s='+session,'close'],capture_output=True,text=True,cwd=root)

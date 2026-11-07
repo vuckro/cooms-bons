@@ -17,6 +17,7 @@ $intercept_mail = null;
 try {
     wp_set_current_user(1);
     $check(current_user_can(Store::MANAGE), 'Administrator can manage bons');
+    $check(get_option('cooms_bons_schema') === '2', 'Description schema migration installed');
     $manifest = Webapp::manifest();
     $check($manifest['display'] === 'standalone' && $manifest['start_url'] === Scanner::url(), 'Webapp opens the scanner in standalone mode');
     $check($manifest['scope'] === home_url('/') && $manifest['id'] === Scanner::url(), 'Webapp identity and scope use the actual WordPress home');
@@ -84,9 +85,16 @@ try {
     $id = Store::create_lot('RECETTE AUTOMATISÉE — à supprimer', 25, $key);
     $check(is_int($id), 'Create batch of 25'); $lot_ids[] = $id;
     $future = (new DateTimeImmutable('now', new DateTimeZone('Europe/Zurich')))->modify('+45 days')->format('Y-m-d');
-    $custom = Store::create_lot('RECETTE cadeau personnalisé', 2, bin2hex(random_bytes(32)), 'Coffret de 8 cookies — 40 CHF', $future);
+    $custom = Store::create_lot('RECETTE cadeau personnalisé', 2, bin2hex(random_bytes(32)), 'Coffret de 8 cookies — 40 CHF', $future, "<b>Réservé</b>\nDistribution équipe 🍪");
     $check(is_int($custom), 'Create custom gift/date lot'); $lot_ids[] = $custom;
     $custom_bons = Store::bons($custom);
+    $check(Store::lot($custom)->description === "Réservé\nDistribution équipe 🍪", 'Internal description stores sanitized multiline Unicode');
+    $check(Store::lot($id)->description === '', 'Description remains optional');
+    $check(!property_exists(Store::find($custom_bons[0]->token), 'description') && !property_exists($custom_bons[0], 'description'), 'Private description excluded from public voucher data');
+    $check(is_wp_error(Store::create_lot('Too long', 1, bin2hex(random_bytes(32)), Store::TITLE, $future, str_repeat('é', 2001))), 'Oversized internal description refused');
+    $check(Store::update_description($custom, 'Suivi interne') === true && Store::lot($custom)->description === 'Suivi interne', 'Responsible can edit an existing lot description');
+    $check(is_wp_error(Store::update_description($custom, str_repeat('é', 2001))) && Store::lot($custom)->description === 'Suivi interne', 'Invalid update retains previous internal note');
+    $check(Store::update_description($custom, '') === true && Store::lot($custom)->description === '', 'Responsible can clear an internal description');
     $check(Store::lot($custom)->title === 'Coffret de 8 cookies — 40 CHF' && $custom_bons[0]->title === Store::lot($custom)->title, 'Gift copied consistently into lot and bon view');
     $check(Store::expiry_label($custom_bons[0]->expires_at) === (new DateTimeImmutable($future))->format('d/m/Y'), 'Custom expiry date inclusive');
     $check($custom_bons[0]->expires_at === Store::lot($custom)->expires_at, 'Lot and every bon share exact expiry');
@@ -149,6 +157,7 @@ try {
 
     $check(Store::redeem($bons[2]->token)['result'] === 'success', 'Seller may redeem');
     $check((int) Store::find($bons[2]->token)->redeemed_by === $seller_id, 'Seller recorded');
+    $check(is_wp_error(Store::update_description($custom, 'Seller edit')), 'Seller cannot edit private lot notes');
     $attributed = array_values(array_filter(Store::bons($id), static fn($row) => $row->token === $bons[2]->token))[0];
     $check(Store::redeemer_label($attributed) === get_userdata($seller_id)->display_name, 'Management lists the actual employee who redeemed');
     $deleted_account = clone $attributed; $deleted_account->redeemer_name = null;

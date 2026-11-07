@@ -8,6 +8,7 @@ final class Plugin {
         add_action('admin_menu', [$this, 'menu']);
         add_action('admin_enqueue_scripts', [$this, 'assets']);
         add_action('admin_post_cooms_create', [$this, 'create']);
+        add_action('admin_post_cooms_description', [$this, 'description']);
         add_action('admin_post_cooms_export', [$this, 'export']);
         add_action('template_redirect', [$this, 'scan'], -100);
     }
@@ -57,7 +58,7 @@ final class Plugin {
         }
         if ($page === 'cooms-bons-new') {
             $error = '';
-            $name = ''; $quantity = 25; $gift = Store::TITLE;
+            $name = ''; $quantity = 25; $gift = Store::TITLE; $description = '';
             $valid_until = (new \DateTimeImmutable(Store::expiry(new \DateTimeImmutable('now')), new \DateTimeZone('UTC')))->modify('-1 second')->setTimezone(new \DateTimeZone('Europe/Zurich'))->format('Y-m-d');
             $key = bin2hex(random_bytes(32));
             $flash = isset($_GET['form_error']) && is_string($_GET['form_error']) ? sanitize_key(wp_unslash($_GET['form_error'])) : '';
@@ -68,6 +69,7 @@ final class Plugin {
                 if (is_array($saved)) {
                     $error = $saved['error']; $name = $saved['name']; $quantity = $saved['quantity'];
                     $gift = $saved['gift']; $valid_until = $saved['valid_until']; $key = $saved['key'];
+                    $description = $saved['description'] ?? '';
                 }
             }
             require dirname(COOMS_BONS_FILE) . '/templates/new.php';
@@ -100,7 +102,8 @@ final class Plugin {
         $key = isset($_POST['request_key']) && is_string($_POST['request_key']) ? sanitize_text_field(wp_unslash($_POST['request_key'])) : '';
         $gift = isset($_POST['gift']) && is_string($_POST['gift']) ? sanitize_text_field(wp_unslash($_POST['gift'])) : '';
         $valid_until = isset($_POST['valid_until']) && is_string($_POST['valid_until']) ? wp_unslash($_POST['valid_until']) : '';
-        $id = Store::create_lot($name, (int) $quantity, $key, $gift, $valid_until);
+        $description = isset($_POST['description']) && is_string($_POST['description']) ? sanitize_textarea_field(wp_unslash($_POST['description'])) : '';
+        $id = Store::create_lot($name, (int) $quantity, $key, $gift, $valid_until, $description);
         if (is_wp_error($id)) {
             $error = $id->get_error_message();
             if (!preg_match('/^[a-f0-9]{64}$/D', $key)) { $key = bin2hex(random_bytes(32)); }
@@ -108,6 +111,7 @@ final class Plugin {
             set_transient('cooms_form_' . get_current_user_id() . '_' . $flash, [
                 'error' => $error, 'name' => mb_substr($name, 0, 160), 'quantity' => (int) $quantity,
                 'gift' => mb_substr($gift, 0, 190), 'valid_until' => substr($valid_until, 0, 10), 'key' => $key,
+                'description' => mb_substr($description, 0, 2000),
             ], 10 * MINUTE_IN_SECONDS);
             wp_safe_redirect(add_query_arg(['page' => 'cooms-bons-new', 'form_error' => $flash], admin_url('admin.php')), 303);
             exit;
@@ -118,6 +122,17 @@ final class Plugin {
 
     public static function export_url(string $format, int $lot = 0, string $status = ''): string {
         return wp_nonce_url(add_query_arg(['action' => 'cooms_export', 'format' => $format, 'lot' => $lot, 'status' => $status], admin_url('admin-post.php')), 'cooms_export');
+    }
+
+    public function description(): void {
+        if (!current_user_can(Store::MANAGE)) { wp_die('Accès réservé au responsable.', '', ['response' => 403]); }
+        $id = isset($_POST['lot']) && is_scalar($_POST['lot']) ? absint($_POST['lot']) : 0;
+        check_admin_referer('cooms_description_' . $id);
+        if (!isset($_POST['description']) || !is_string($_POST['description'])) { wp_die('Description invalide.', '', ['response' => 400]); }
+        $result = Store::update_description($id, wp_unslash($_POST['description']));
+        if (is_wp_error($result)) { wp_die(esc_html($result->get_error_message()), '', ['response' => $result->get_error_code() === 'missing' ? 404 : 400, 'back_link' => true]); }
+        wp_safe_redirect(add_query_arg(['page' => 'cooms-bons', 'lot' => $id, 'description_saved' => 1], admin_url('admin.php')), 303);
+        exit;
     }
 
     public function export(): void {

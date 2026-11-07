@@ -272,3 +272,9 @@ Le bloc de visée occupe explicitement100% de la largeur utile du panneau camér
 Boutique et bons : logotype rouge officiel du site COOMS, extrait du média `2025/10/cooms_cookies_logotype_rouge.png`, conservé sans déformation. Copie locale autonome `assets/brand/cooms-logo.png`. Palette du site : rouge #E73523, crème #F5DECB, anthracite #272626. Fond boutique #FFF8F2 ; action rouge #C52C1D avec texte blanc pour assurer le contraste, liens #B1271A, secondaire #6A5146. Les états métier gardent vert/orange/rouge et leur libellé. Pas de changement des tokens hôtes AdminKit.
 
 Bon PNG : 1000 × 1320, bande crème avec vrai logo, cadeau personnalisé, QR noir sur blanc non obstrué et marge native préservée, référence et date, pied crème. Icônes webapp dérivées du même logo dans la zone sûre maskable. Tableau : colonne finale « Validé par », nom du compte enregistré lors du retrait ; aucun nom sur le bon imprimable.
+
+## Descriptions internes — 1.6
+
+Champ multiligne facultatif sous le nom du lot, limite de 2 000 caractères, aide explicite sur sa confidentialité. Une fiche de lot affiche la description et un formulaire de modification dépliable. Le champ suit les surfaces, textes, bordures, rayons et focus AdminKit, avec saisie mobile à 16 px minimum. La description ne fait pas partie des données publiques du bon ni des exports.
+
+Les commandes caméra sont empilées en pleine largeur, y compris pendant la demande de permission : ouvrir puis annuler. Aucun partage horizontal de largeur sur iPhone.
