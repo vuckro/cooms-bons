@@ -205,6 +205,11 @@ async (page, fixture) => {
   await cancel
     .getByRole("button", { name: "Ouvrir la caméra", exact: true })
     .click();
+  assert(await cancel.locator('.cb-camera-controls').evaluate(e => {
+    const buttons=[...e.querySelectorAll('button')].filter(b=>!b.hidden).map(b=>b.getBoundingClientRect());
+    return buttons.length===2 && buttons[1].top>=buttons[0].bottom && Math.abs(buttons[0].width-buttons[1].width)<1;
+  }), 'Pending camera buttons stack vertically at full width');
+  await cancel.screenshot({path:captures+'cooms16-camera-pending.png',fullPage:true});
   await cancel
     .getByRole("button", { name: "Annuler l’ouverture", exact: true })
     .click();

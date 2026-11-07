@@ -24,6 +24,7 @@ final class Store {
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             name varchar(160) NOT NULL,
             title varchar(190) NOT NULL,
+            description text DEFAULT NULL,
             quantity int unsigned NOT NULL,
             request_key varchar(64) NOT NULL,
             created_at datetime NOT NULL,
@@ -60,7 +61,8 @@ final class Store {
             $admin->add_cap(self::MANAGE);
             $admin->add_cap(self::REDEEM);
         }
-        update_option('cooms_bons_schema', '1', false);
+        if ($wpdb->get_var("SHOW COLUMNS FROM $lots LIKE 'description'") !== 'description') { return; }
+        update_option('cooms_bons_schema', '2', false);
     }
 
     /** Six calendar months, clamped to the last day of the destination month. */
@@ -103,7 +105,7 @@ final class Store {
     }
 
     /** @return int|\WP_Error */
-    public static function create_lot(string $name, int $quantity, string $key, string $gift = self::TITLE, ?string $valid_until = null) {
+    public static function create_lot(string $name, int $quantity, string $key, string $gift = self::TITLE, ?string $valid_until = null, string $description = '') {
         global $wpdb;
         $name = sanitize_text_field($name);
         if ($name === '' || mb_strlen($name) > 160 || $quantity < 1 || $quantity > self::MAX_BATCH || !preg_match('/^[a-f0-9]{64}$/D', $key)) {
@@ -111,6 +113,8 @@ final class Store {
         }
         $gift = sanitize_text_field($gift);
         if ($gift === '' || mb_strlen($gift) > 190) { return new \WP_Error('invalid_gift', 'Indiquez un cadeau de 1 à 190 caractères.'); }
+        $description = self::description($description);
+        if (is_wp_error($description)) { return $description; }
         $expires = $valid_until === null ? self::expiry(new \DateTimeImmutable('now', new \DateTimeZone('UTC'))) : self::selected_expiry($valid_until);
         if (is_wp_error($expires)) { return $expires; }
         $lots = self::table('lots');
@@ -119,7 +123,7 @@ final class Store {
         $now = self::now();
         $wpdb->query('START TRANSACTION');
         try {
-            $created = $wpdb->insert($lots, ['name' => $name, 'title' => $gift, 'quantity' => $quantity,
+            $created = $wpdb->insert($lots, ['name' => $name, 'title' => $gift, 'description' => $description, 'quantity' => $quantity,
                 'request_key' => $key, 'created_at' => $now, 'expires_at' => $expires, 'created_by' => get_current_user_id()]);
             if (!$created) {
                 $wpdb->query('ROLLBACK');
@@ -179,6 +183,22 @@ final class Store {
     public static function lot(int $id): ?object {
         global $wpdb;
         return $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . self::table('lots') . ' WHERE id=%d', $id));
+    }
+
+    /** Private operational notes; never joined into public voucher data. */
+    public static function description(string $value) {
+        $value = sanitize_textarea_field($value);
+        return mb_strlen($value) > 2000 ? new \WP_Error('invalid_description', 'La description interne est limitée à 2 000 caractères.') : $value;
+    }
+
+    public static function update_description(int $id, string $value) {
+        if (!current_user_can(self::MANAGE)) { return new \WP_Error('forbidden', 'Accès réservé au responsable.'); }
+        $value = self::description($value);
+        if (is_wp_error($value)) { return $value; }
+        if (!self::lot($id)) { return new \WP_Error('missing', 'Lot introuvable.'); }
+        global $wpdb;
+        return $wpdb->update(self::table('lots'), ['description' => $value], ['id' => $id]) === false
+            ? new \WP_Error('storage', 'La description n’a pas pu être enregistrée. Réessayez.') : true;
     }
 
     public static function lots(): array {

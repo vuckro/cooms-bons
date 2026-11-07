@@ -93,6 +93,12 @@ body.adminkit .cb-app .cb-work .cb-filters select {
   font-size: var(--ak-text-s, 13px);
 }
 body.adminkit .cb-app input::placeholder { color: var(--ak-text-subtle, var(--cb-muted)); }
+body.adminkit .cb-app textarea {
+  background-color: var(--ak-input-bg, var(--cb-surface));
+  border-color: var(--ak-input-border, var(--cb-border));
+  border-radius: var(--ak-radius-s, 8px);
+  font-size: var(--ak-text-s, 13px);
+}
 body.adminkit .cb-app :focus-visible,
 body.adminkit .cb-app .cb-field input:focus-visible,
 body.adminkit .cb-app .cb-work .cb-filters select:focus-visible {
@@ -111,6 +117,7 @@ body.adminkit .cb-app ::selection {
 body.adminkit .cb-app { color-scheme: light; }
 :root[data-adminkit-theme="dark"] body.adminkit .cb-app { color-scheme: dark; }
 @media (max-width: 782px) {
+  body.adminkit .cb-app textarea { font-size: max(16px, var(--ak-text-m, 14px)); }
   body.adminkit .cb-app .cb-button,
   body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]),
   body.adminkit .cb-app .cb-work .cb-filters select {

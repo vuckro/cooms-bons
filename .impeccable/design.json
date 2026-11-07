@@ -384,7 +384,14 @@
       "accessibleAction": "#C52C1D",
       "qr": "black modules on white; official logo outside quiet zone",
       "admin": "AdminKit host tokens unchanged"
-    }
+    },
+    "internalDescriptions": {
+      "limit": 2000,
+      "visibility": "management only; not CSV, PNG or public voucher",
+      "storage": "lots.description schema 2",
+      "controls": "AdminKit textarea; optional on create; editable per lot"
+    },
+    "cameraControlLayout": "vertical full-width stack, including pending permission"
   },
   "components": [
     {

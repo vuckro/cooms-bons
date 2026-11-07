@@ -105,22 +105,37 @@ key=re.search(r'name="request_key" value="([^"]+)"',s).group(1)
 from datetime import date,timedelta
 selected=(date.today()+timedelta(days=60)).isoformat()
 custom_gift='Coffret de 8 cookies — 40 CHF'
-payload={'action':'cooms_create','_wpnonce':nonce,'request_key':key,'name':'RECETTE HTTP personnalisée','quantity':'2','gift':custom_gift,'valid_until':'2020-01-01'}
+internal_note='NOTE INTERNE — distribution équipe 🍪'
+payload={'action':'cooms_create','_wpnonce':nonce,'request_key':key,'name':'RECETTE HTTP personnalisée','quantity':'2','gift':custom_gift,'valid_until':'2020-01-01','description':internal_note}
 _,body,_=request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(payload).encode());s=body.decode()
 check('Choisissez une date de fin de validité' in s and custom_gift in s and key in s,'Invalid date preserves entered gift, name and idempotency key')
+check(internal_note in s,'Validation error preserves the private description')
 payload['valid_until']=selected
 _,body,_=request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(payload).encode());s=body.decode()
 lot_id=int(re.search(r'name="lot"[^>]*>.*?<option value="(\d+)"\s+selected',s,re.S).group(1))
 fixture.setdefault('extra_lots',[]).append({'id':lot_id,'request_key':key})
 (root/'output/http-fixture.json').write_text(json.dumps(fixture))
 check(custom_gift in s and date.fromisoformat(selected).strftime('%d/%m/%Y') in s,'Custom gift and inclusive validity visible on created lot')
+check(internal_note in s,'Created lot displays its internal description to management')
+description_form=re.search(r'<form[^>]*class="cb-notes-form".*?</form>',s,re.S).group(0)
+description_nonce=re.search(r'name="_wpnonce" value="([^"]+)"',description_form).group(1)
+note_payload={'action':'cooms_description','lot':str(lot_id),'_wpnonce':description_nonce,'description':internal_note+' — modifiée'}
+_,note_body,_=request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(note_payload).encode())
+check('Description interne enregistrée' in note_body.decode() and internal_note+' — modifiée' in note_body.decode(),'Responsible edits internal description through nonce-protected form')
+bad_note=dict(note_payload,_wpnonce='invalid')
+check(request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(bad_note).encode())[0]==403,'Internal description update rejects invalid nonce')
+cookie='; '.join(c['name']+'='+c['value'] for c in fixture['accounts']['seller']['cookies'])
+check(request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(note_payload).encode())[0]==403,'Seller cannot update internal description')
+cookie=admin_cookie
 links=[html.unescape(x) for x in re.findall(r'href="([^"]+)"',s)]
 custom_csv=next(x for x in links if 'format=csv' in x)
 _,data,_=request(custom_csv);custom_rows=list(csv.reader(io.StringIO(data.decode('utf-8-sig')),delimiter=';'))
+check(internal_note.encode() not in data,'Private description excluded from CSV')
 check(len(custom_rows)==3 and all(row[6]==custom_gift and row[3]==date.fromisoformat(selected).strftime('%d/%m/%Y') for row in custom_rows[1:]),'Custom gift/date exported on both CSV rows')
 _,body,_=request(scan);lookup_nonce=re.search(r'name="_wpnonce" value="([^"]+)"',body.decode()).group(1)
 _,body,_=request(scan,urllib.parse.urlencode({'code':custom_rows[1][0],'_wpnonce':lookup_nonce}).encode())
 check(custom_gift in body.decode() and 'Valider la remise du cadeau' in body.decode() and 'Une boîte de 4 cookies' not in body.decode(),'Seller lookup displays custom gift without hardcoded box copy')
+check(internal_note not in body.decode(),'Private description excluded from the voucher screen')
 # Native employee-account management: never send test invitations.
 cookie=admin_cookie
 staff_page=base+'/wp-admin/admin.php?page=cooms-bons-staff'
