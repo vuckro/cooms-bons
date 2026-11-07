@@ -4,6 +4,7 @@ use Cooms\Bons\Store;
 use Cooms\Bons\Export;
 use Cooms\Bons\Scanner;
 use Cooms\Bons\Staff;
+use Cooms\Bons\Webapp;
 if (wp_get_environment_type() !== 'local') { throw new RuntimeException('Local environment required.'); }
 $passed = 0;
 $check = static function ($ok, string $label) use (&$passed) {
@@ -16,6 +17,14 @@ $intercept_mail = null;
 try {
     wp_set_current_user(1);
     $check(current_user_can(Store::MANAGE), 'Administrator can manage bons');
+    $manifest = Webapp::manifest();
+    $check($manifest['display'] === 'standalone' && $manifest['start_url'] === Scanner::url(), 'Webapp opens the scanner in standalone mode');
+    $check($manifest['scope'] === home_url('/') && $manifest['id'] === Scanner::url(), 'Webapp identity and scope use the actual WordPress home');
+    $check(count($manifest['icons']) === 3 && $manifest['icons'][2]['purpose'] === 'maskable', 'Webapp has regular and maskable icons');
+    foreach (['icon-192.png' => 192, 'icon-512.png' => 512, 'icon-maskable-512.png' => 512, 'apple-touch-icon.png' => 180] as $file => $size) {
+        $image = getimagesize(dirname(COOMS_BONS_FILE) . '/assets/app/' . $file);
+        $check($image[0] === $size && $image[1] === $size && $image['mime'] === 'image/png', 'Packaged webapp icon ' . $file);
+    }
     $check(Staff::can_manage(), 'Administrator can manage staff accounts');
     $check(is_wp_error(Staff::create('', 'invalid')), 'Invalid employee data refused');
     $check(is_wp_error(Staff::create('Example', 'invalid')), 'Invalid employee email refused');

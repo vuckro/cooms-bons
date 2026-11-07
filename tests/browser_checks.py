@@ -18,7 +18,9 @@ config={'browser':{'browserName':'chromium','isolated':True,'launchOptions':{'ch
 config_path=root/'output/browser-config.json'; config_path.write_text(json.dumps(config))
 state_path=root/'output/browser-auth.json'; state_path.write_text(json.dumps({'cookies':f['accounts']['admin']['cookies'],'origins':[]})); state_path.chmod(0o600)
 source=(root/'tests/browser-flow.js').read_text().strip().removesuffix(';')
-code='async (page) => { return await ('+source+')(page, '+json.dumps({'base':f['base'],'lot':f['lot'],'bons':f['bons']})+'); }'
+webapp=(root/'tests/webapp-flow.js').read_text().strip().removesuffix(';')
+fixture=json.dumps({'base':f['base'],'lot':f['lot'],'bons':f['bons']})
+code='async (page) => { const first=await ('+source+')(page, '+fixture+'); const app=await ('+webapp+')(page, '+fixture+'); return {passed:first.passed+app.passed,checks:[...first.checks,...app.checks]}; }'
 def run(*args):
  r=subprocess.run([cli,'-s='+session,*args],capture_output=True,text=True,cwd=root)
  result=r.stdout+r.stderr
@@ -32,7 +34,7 @@ try:
  run('state-load',str(state_path))
  result=run('run-code',code)
  summary=json.loads(result.split('### Result',1)[1].split('### Ran Playwright code',1)[0].strip())
- assert summary['passed']==14 and len(summary['checks'])==14, 'Incomplete browser test result'
+ assert summary['passed']==38 and len(summary['checks'])==38, 'Incomplete browser test result'
  print(json.dumps(summary,ensure_ascii=False,indent=2))
 finally:
  subprocess.run([cli,'-s='+session,'close'],capture_output=True,text=True,cwd=root)

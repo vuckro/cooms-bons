@@ -252,3 +252,12 @@ Le pont est chargé après les feuilles AdminKit déjà en file, sans dépendanc
 Surface Operate réservée aux responsables ayant les capacités WordPress de gestion des comptes. Une liste affiche le nom, l’e-mail, l’état écrit Actif/Suspendu et une action réversible. En dessous, le formulaire ne demande que nom/e-mail : aucun choix de rôle. L’invitation native est une case explicite, activée par défaut. Une aide explique le lien du scanner et la reprise sans réception d’e-mail. La copie du lien annonce sa réussite ou sélectionne le texte en secours. Les messages serveur utilisent un feedback privé par utilisateur puis une redirection303 ; les erreurs conservent nom/e-mail. Les composants et le pont AdminKit existants s’appliquent à cette surface ; les champs e-mail suivent la même densité et le même focus.
 
 Sur mobile, les lignes employés se replient avec nom/e-mail, état puis actions visibles, sans devoir faire défiler le tableau horizontalement. Les cases d’invitation restent des contrôles natifs de l’hôte ; seuls les champs texte/nombre/date/e-mail reçoivent la densité des champs.
+
+
+### Finition et webapp connectée (1.4)
+
+Surface boutique en mode Operate, même identité claire. Le manifeste COOMS Boutique, les icônes géométriques, le titre Apple et le mode standalone permettent l’installation depuis le navigateur. Les pages de scanner et de bon partagent un en-tête technique unique. L’aide d’installation est une divulgation native, masquée dans l’app installée. Aucun panneau promotionnel ni demande caméra automatique.
+
+Le viewport couvre l’écran et les gouttières tiennent compte des safe-area insets. La zone caméra conserve son ratio de base mais plafonne à min(42svh,420px), pour garder l’action d’ouverture visible à 320×740,390×844 et1280×720. Le paysage compact réduit le pictogramme de visée. Les liens de session et actions d’installation ont une cible de44px. La connexion perdue affiche un état ambre avec explication ; les actions restent bloquées jusqu’à une actualisation serveur, même après le retour du réseau. Les tailles de texte nouvelles restent sur16px (message de connexion et titre caméra compact).
+
+Les actions AdminKit gardent les tokens de teinte et d’encre. Si le contraste calculé est inférieur à4,5:1, le fond de l’action seule est ajusté vers le noir ou le blanc jusqu’au seuil, sans réécrire les tokens de l’hôte. Le survol est traité séparément et les changements de thème sont suivis. Un accent déjà lisible reste exact. Les champs, statuts et focus natifs restent inchangés.

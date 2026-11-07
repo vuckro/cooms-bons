@@ -56,12 +56,12 @@ body.adminkit .cb-app .cb-button {
   padding: var(--ak-space-xs, 4px) var(--ak-space-m, 12px);
   border-radius: var(--ak-radius-s, 8px);
   font-size: var(--ak-text-s, 13px);
-  background: var(--cb-accent);
+  background: var(--cb-button-bg, var(--cb-accent));
   color: var(--ak-on-accent, #fff);
   box-shadow: var(--ak-btn-primary-shadow, none);
 }
 body.adminkit .cb-app .cb-button:hover {
-  background: var(--cb-accent-hover);
+  background: var(--cb-button-hover-bg, var(--cb-accent-hover));
   color: var(--ak-on-accent-hover, #fff);
   box-shadow: var(--ak-btn-primary-shadow-hover, none);
 }
