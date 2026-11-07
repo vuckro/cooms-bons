@@ -26,6 +26,7 @@
     if (available) {
       available.querySelector("h1").textContent = "Vérification en pause";
       available.querySelector("p").textContent = "Actualisez le statut après le retour de la connexion avant de remettre ce cadeau.";
+      available.querySelector("svg path").setAttribute("d", "M9 8v8m6-8v8");
     }
     blockActions();
   }

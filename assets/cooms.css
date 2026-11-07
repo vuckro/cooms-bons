@@ -1261,6 +1261,7 @@ body.cb-scan {
 .cb-scan .cb-viewfinder { max-height: min(42svh, 420px); }
 .cb-scan .cb-scan-footer { overflow-wrap: anywhere; }
 .cb-scan .cb-scan-footer a { min-height: 44px; display: inline-flex; align-items: center; padding: 4px; }
+.cb-app input::placeholder, .cb-scan input::placeholder { color: var(--cb-muted); opacity: 1; }
 .cb-connection {
   max-width: 640px;
   margin: 0 auto 20px;
