@@ -83,7 +83,7 @@ Sur une **copie locale uniquement** : `wp eval-file tests/integration.php` (94 a
 
 ## Recette caméra et responsive
 
-Après les tests HTTP et avant leur nettoyage : `wp eval-file tests/prepare-camera.php`, puis `python3 tests/browser_checks.py`. Nécessite Chrome, ffmpeg et Playwright CLI. Le script ouvre et ferme sa propre session dédiée, utilise une vidéo virtuelle d’un PNG réellement exporté et ne touche pas la caméra physique. `PWCLI` permet de définir le chemin du CLI. Les 51 contrôles couvrent le décodage, la fermeture des pistes, la remise, le bon suivant, la saisie manuelle, les permissions refusées, l’absence de caméra, HTTP non sécurisé, annulation tardive et débordements responsive. Ces tests sont exécutés dans le job PHP 8.3 de GitHub Actions.
+Après les tests HTTP et avant leur nettoyage : `wp eval-file tests/prepare-camera.php`, puis `python3 tests/browser_checks.py`. Nécessite Chrome, ffmpeg et Playwright CLI. Le script ouvre et ferme sa propre session dédiée, utilise une vidéo virtuelle d’un PNG réellement exporté et ne touche pas la caméra physique. `PWCLI` permet de définir le chemin du CLI. Les 52 contrôles couvrent le décodage, la fermeture des pistes, la remise, le bon suivant, la saisie manuelle, les permissions refusées, l’absence de caméra, HTTP non sécurisé, annulation tardive et débordements responsive. Ces tests sont exécutés dans le job PHP 8.3 de GitHub Actions.
 
 La recette physique avec le matériel de caisse reste nécessaire avant la mise en production. Le tutoriel vidéo1.1 montre les nouvelles pages et le scanner intégré ; voir [le guide du tutoriel](docs/TUTORIEL-1.1.md). Le tutoriel1.0 est conservé pour l’historique.
 

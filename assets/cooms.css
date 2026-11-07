@@ -934,6 +934,10 @@ body.cb-scan {
 .cb-scanner-heading {
   margin-bottom: 24px;
 }
+.cb-scan .cb-scanner > .cb-error {
+  margin: 0;
+  margin-block-end: 24px;
+}
 .cb-scanner h1 {
   font-size: 30px;
   letter-spacing: -0.025em;

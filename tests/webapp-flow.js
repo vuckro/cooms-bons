@@ -17,6 +17,13 @@ async (page, fixture) => {
   const help = page.locator('[data-install-help]');
   await help.locator('summary').press('Enter');
   assert(await help.locator('div').isVisible(), 'Installation help opens with the keyboard');
+  await page.getByLabel('Référence du bon', {exact:true}).fill('INVALID');
+  await page.getByRole('button', {name:'Vérifier le bon',exact:true}).click();
+  await page.locator('.cb-scanner > .cb-error').waitFor();
+  assert(await page.locator('.cb-scanner > .cb-error').evaluate(error=>{
+    const a=error.getBoundingClientRect(),b=document.querySelector('.cb-camera-section').getBoundingClientRect();
+    return Math.abs(a.left-b.left)<1&&Math.abs(a.width-b.width)<1;
+  }),'Invalid-reference feedback aligns with the camera panel');
   await page.context().setOffline(true);
   await page.waitForFunction(() => !navigator.onLine);
   await page.locator('[data-connection]').waitFor();
