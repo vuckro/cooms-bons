@@ -39,7 +39,7 @@
     guide.hidden = true;
     idle.hidden = false;
     start.hidden = false;
-    start.disabled = false;
+    start.disabled = !navigator.onLine;
     stop.hidden = true;
     stop.textContent = "Arrêter la caméra";
     root.removeAttribute("aria-busy");
@@ -195,6 +195,10 @@
     manual.setAttribute("aria-busy", "true");
   });
   window.addEventListener("pagehide", closeCamera);
+  window.addEventListener("offline", function () {
+    closeCamera();
+    message("Hors connexion. Reconnectez-vous et actualisez la page avant de continuer.", true);
+  });
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) {
       closeCamera();

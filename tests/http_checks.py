@@ -157,4 +157,17 @@ code,body,_=request(base+'/?cooms_scan=1')
 check('Accès équipe COOMS' in body.decode() and 'data-scanner ' not in body.decode(),'Already authenticated seller session is revoked after suspension')
 cookie=admin_cookie
 staff_post('enable',staff_id=fixture['accounts']['seller']['id'])
+# Public install metadata carries no private account or voucher state.
+code,data,headers=request(base+'/?cooms_manifest=1',auth=False)
+manifest=json.loads(data)
+check(code==200 and 'application/manifest+json' in headers.get('Content-Type',''),'Manifest uses the webapp MIME type without authentication')
+check(manifest['start_url']==base+'/?cooms_scan=1' and manifest['display']=='standalone','Manifest starts at the scanner in standalone mode')
+check(manifest['scope']==base+'/' and manifest['id']==manifest['start_url'],'Manifest identity is stable and site-relative')
+check('noindex' in headers.get('X-Robots-Tag','') and all(b['token'].encode() not in data for b in fixture['bons']),'Manifest is non-indexable and contains no private voucher tokens')
+for icon in manifest['icons']:
+ code,image,_=request(icon['src'],auth=False)
+ check(code==200 and image.startswith(b'\x89PNG\r\n\x1a\n'),'Public install icon loads: '+icon['sizes']+' '+icon['purpose'])
+for entry in [base+'/?cooms_scan=1',url()]:
+ _,body,_=request(entry,auth=False);markup=body.decode()
+ check('rel="manifest"' in markup and 'apple-touch-icon' in markup and 'viewport-fit=cover' in markup,'Scanner/voucher login shell includes mobile webapp metadata')
 print('SUCCESS:',passed,'HTTP checks',flush=True)

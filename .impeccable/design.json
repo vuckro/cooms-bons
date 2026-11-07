@@ -355,6 +355,17 @@
       ],
       "copyFallback": "select readonly scanner link",
       "theme": "existing AdminKit bridge"
+    },
+    "connectedWebapp": {
+      "version": "1.4.0",
+      "mode": "operate",
+      "manifest": "/?cooms_manifest=1",
+      "startUrl": "/?cooms_scan=1",
+      "display": "standalone",
+      "offline": "no mutations; no service worker or private-data cache",
+      "safeAreas": true,
+      "cameraMaxHeight": "min(42svh,420px)",
+      "hostContrast": "local primary background adjustment only below 4.5:1; host tokens untouched"
     }
   },
   "components": [

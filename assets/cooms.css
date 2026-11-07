@@ -1248,3 +1248,65 @@ body.cb-scan {
   .cb-staff-table td:last-child { grid-column: 1 / -1; }
   .cb-staff-table .cb-actions { align-items: center; gap: 12px; }
 }
+/* Connected boutique app: safe areas, compact camera, installation and recovery. */
+body.cb-scan {
+  min-height: 100svh;
+  padding-inline-start: max(20px, env(safe-area-inset-left));
+  padding-inline-end: max(20px, env(safe-area-inset-right));
+  padding-block-end: max(32px, calc(env(safe-area-inset-bottom) + 20px));
+  color-scheme: light;
+}
+.cb-scan .cb-brand { padding-block-start: max(20px, calc(env(safe-area-inset-top) + 12px)); }
+.cb-scan .cb-brand > a { display: inline-flex; align-items: center; min-height: 44px; }
+.cb-scan .cb-viewfinder { max-height: min(42svh, 420px); }
+.cb-scan .cb-scan-footer { overflow-wrap: anywhere; }
+.cb-scan .cb-scan-footer a { min-height: 44px; display: inline-flex; align-items: center; padding: 4px; }
+.cb-app input::placeholder, .cb-scan input::placeholder { color: var(--cb-muted); opacity: 1; }
+.cb-connection {
+  max-width: 640px;
+  margin: 0 auto 20px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: var(--cb-amber-bg);
+  color: var(--cb-amber);
+}
+.cb-connection p { margin: 0; font-size: 16px; line-height: 1.5; }
+.cb-connection .cb-button { margin-block-start: 12px; min-height: 44px; }
+.cb-scan.cb-is-offline .cb-state-available .cb-verdict { background: var(--cb-paper); color: var(--cb-ink); }
+.cb-scan.cb-is-offline :is(.cb-redeem, [data-start], [data-manual-form] button):disabled {
+  opacity: 1;
+  background: var(--cb-paper);
+  color: var(--cb-muted);
+  border-color: var(--cb-border);
+  cursor: not-allowed;
+}
+.cb-install {
+  margin-block-start: 24px;
+  padding-block: 12px;
+  border-block-start: 1px solid var(--cb-border);
+  color: var(--cb-muted);
+  font-size: 14px;
+}
+.cb-install summary { min-height: 44px; padding-block: 10px; color: var(--cb-ink); font-weight: 550; cursor: pointer; }
+.cb-install p { max-width: 65ch; line-height: 1.6; margin-block: 12px; }
+.cb-install .cb-button { min-height: 44px; }
+@media (max-width: 600px) {
+  body.cb-scan {
+    padding-inline-start: max(12px, env(safe-area-inset-left));
+    padding-inline-end: max(12px, env(safe-area-inset-right));
+  }
+  .cb-scan .cb-brand { padding-block-end: 16px; }
+  .cb-scanner-heading { margin-block-end: 20px; }
+}
+@media (max-height: 600px) and (orientation: landscape) {
+  .cb-scan .cb-brand { padding-block-end: 8px; }
+  .cb-scan .cb-scanner-heading { margin-block-end: 16px; }
+  .cb-scan .cb-camera-idle { gap: 4px; padding: 12px; }
+  .cb-scan .cb-camera-idle svg { width: 28px; height: 28px; margin-block-end: 4px; }
+  .cb-scan .cb-camera-idle strong { font-size: 16px; }
+}
+@media (display-mode: standalone) { .cb-install { display: none; } }
+@media (forced-colors: active) {
+  .cb-scan :focus-visible, .cb-app :focus-visible { outline: 2px solid Highlight; }
+  .cb-status { border: 1px solid currentColor; }
+}

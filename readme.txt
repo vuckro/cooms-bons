@@ -4,14 +4,14 @@ Tags: qr-code, gift-vouchers
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Bons anonymes par lots, QR codes PNG et validation sécurisée en boutique COOMS.
 
 == Description ==
-Génération de lots, cadeau et date limite personnalisables (six mois proposés), export ZIP PNG, rôle vendeur, validation à usage unique, suivi et export CSV. Aucun service externe, paiement ni envoi d’e-mail.
+Génération de lots, cadeau et date limite personnalisables (six mois proposés), export ZIP PNG, rôle vendeur, validation à usage unique, suivi et export CSV. Aucun service externe ni paiement. Invitation facultative des employés via les e-mails natifs WordPress.
 
 == Installation ==
 Téléverser le ZIP de release avec ses dépendances et activer. Nécessite GD/FreeType, ZIP et InnoDB. Lire README.md et configurer les exclusions de cache avant utilisation réelle.
@@ -24,6 +24,10 @@ Non. Seule la confirmation explicite d’un vendeur autorisé enregistre la remi
 Non. Les données sont conservées pour préserver le rapprochement des retraits.
 
 == Changelog ==
+
+= 1.4.0 =
+* Scanner installable en webapp, icônes dédiées et zones de sécurité iPhone/iPad.
+* Blocage des actions hors connexion, actualisation au retour et finition des interfaces.
 
 = 1.3.0 =
 * Accès employés : création de comptes vendeurs, invitation WordPress facultative, suspension/réactivation et accès direct au scanner.
