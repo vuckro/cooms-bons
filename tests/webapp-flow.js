@@ -17,6 +17,14 @@ async (page, fixture) => {
   const help = page.locator('[data-install-help]');
   await help.locator('summary').press('Enter');
   assert(await help.locator('div').isVisible(), 'Installation help opens with the keyboard');
+  await page.getByLabel('Référence du bon', {exact:true}).fill('INVALID');
+  await page.getByRole('button', {name:'Vérifier le bon',exact:true}).click();
+  await page.locator('.cb-scanner > .cb-error').waitFor();
+  assert(await page.locator('.cb-scanner > .cb-error').evaluate(error=>{
+    const a=error.getBoundingClientRect(),b=document.querySelector('.cb-camera-section').getBoundingClientRect();
+    return Math.abs(a.left-b.left)<1&&Math.abs(a.width-b.width)<1;
+  }),'Invalid-reference feedback aligns with the camera panel');
+  await page.goto(base + '/?cooms_scan=1');
   await page.context().setOffline(true);
   await page.waitForFunction(() => !navigator.onLine);
   await page.locator('[data-connection]').waitFor();
@@ -84,15 +92,24 @@ async (page, fixture) => {
   await cameraPage.goto(base+'/?cooms_scan=1');
   await cameraPage.locator('[data-start]').click();
   await cameraPage.locator('[data-video]').waitFor({state:'visible'});
+  await cameraPage.waitForFunction(()=>document.querySelector('[data-video]').readyState>=2);
+  assert(await cameraPage.locator('[data-video]').evaluate(video=>{const a=video.getBoundingClientRect(),b=video.parentElement.getBoundingClientRect();return Math.abs(a.width-b.width)<1&&Math.abs(a.height-b.height)<1;}),'Active camera video fills the preview without shifting its geometry');
   await cameraContext.setOffline(true);
   await cameraPage.waitForFunction(()=>window.__offlineTracks.every(t=>t.readyState==='ended'));
   assert(await cameraPage.locator('[data-start]').isDisabled(), 'Losing connection stops camera tracks and blocks restart');
   await cameraContext.close();
 
-  for(const [width,height] of [[320,740],[390,844],[768,1024],[844,390],[1024,768],[1280,720]]) {
+  for(const [width,height] of [[320,740],[390,844],[768,1024],[844,390],[1024,768],[1280,720],[1440,780],[1440,1000],[1920,1080]]) {
     await page.setViewportSize({width,height});await page.goto(base+'/?cooms_scan=1');
-    const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,button:document.querySelector('[data-start]').getBoundingClientRect().bottom}));
+    const layout=await page.evaluate(()=>{
+      const panel=document.querySelector('.cb-camera-section').getBoundingClientRect();
+      const view=document.querySelector('.cb-viewfinder').getBoundingClientRect();
+      const action=document.querySelector('[data-start]').getBoundingClientRect();
+      const label=document.querySelector('.cb-camera-idle strong').getBoundingClientRect();
+      return {overflow:document.documentElement.scrollWidth>innerWidth,button:action.bottom,aligned:Math.abs(view.left-action.left)<1 && Math.abs(view.width-action.width)<1,centered:Math.abs((label.left+label.right-panel.left-panel.right)/2)<1};
+    });
     assert(!layout.overflow && (height<600 || layout.button<=height), 'Scanner layout and main action fit '+width+'x'+height);
+    assert(layout.aligned && layout.centered, 'Camera preview and idle text align with the panel '+width+'x'+height);
   }
   // Controlled host token contract: CI does not need AdminKit installed.
   const host = await page.context().browser().newContext({storageState:await page.context().storageState()});

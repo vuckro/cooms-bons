@@ -934,6 +934,10 @@ body.cb-scan {
 .cb-scanner-heading {
   margin-bottom: 24px;
 }
+.cb-scan .cb-scanner > .cb-error {
+  margin: 0;
+  margin-block-end: 24px;
+}
 .cb-scanner h1 {
   font-size: 30px;
   letter-spacing: -0.025em;
@@ -951,6 +955,7 @@ body.cb-scan {
   padding: 16px;
 }
 .cb-viewfinder {
+  width: 100%;
   aspect-ratio: 4/3;
   background: #edf0f2;
   border-radius: 10px;

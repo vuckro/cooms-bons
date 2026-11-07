@@ -261,3 +261,8 @@ Surface boutique en mode Operate, même identité claire. Le manifeste COOMS Bou
 Le viewport couvre l’écran et les gouttières tiennent compte des safe-area insets. La zone caméra conserve son ratio de base mais plafonne à min(42svh,420px), pour garder l’action d’ouverture visible à 320×740,390×844 et1280×720. Le paysage compact réduit le pictogramme de visée. Les liens de session et actions d’installation ont une cible de44px. La connexion perdue affiche un état ambre avec explication ; les actions restent bloquées jusqu’à une actualisation serveur, même après le retour du réseau. Les tailles de texte nouvelles restent sur16px (message de connexion et titre caméra compact).
 
 Les actions AdminKit gardent les tokens de teinte et d’encre. Si le contraste calculé est inférieur à4,5:1, le fond de l’action seule est ajusté vers le noir ou le blanc jusqu’au seuil, sans réécrire les tokens de l’hôte. Le survol est traité séparément et les changements de thème sont suivis. Un accent déjà lisible reste exact. Les champs, statuts et focus natifs restent inchangés.
+
+
+### Cohérence géométrique (1.4.1)
+
+Le bloc de visée occupe explicitement100% de la largeur utile du panneau caméra, comme le bouton d’ouverture. La limite de hauteur et le ratio ne doivent jamais transférer une contrainte de largeur : marges latérales symétriques, icône et texte centrés sur le panneau entier, vidéo calée sur le bloc de visée. Les mesures sont vérifiées aussi sur les fenêtres larges et relativement basses, dont1440×780. Les autres gabarits restent inchangés après revue claire/sombre sur60vues.
