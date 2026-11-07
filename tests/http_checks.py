@@ -47,8 +47,9 @@ archive=zipfile.ZipFile(io.BytesIO(data));check(len(archive.namelist())==25 and 
 (root/'output/exported-bon.png').write_bytes(archive.read(archive.namelist()[0]))
 code,data2,_=request(zip_url);archive2=zipfile.ZipFile(io.BytesIO(data2));check({x:archive.read(x) for x in archive.namelist()}=={x:archive2.read(x) for x in archive2.namelist()},'Repeated export gives identical images')
 code,data,_=request(csv_url);rows=list(csv.reader(io.StringIO(data.decode('utf-8-sig')),delimiter=';'))
-check(code==200 and len(rows)==26 and len(rows[0])==7,'CSV has 25 bons and expected columns')
+check(code==200 and len(rows)==26 and len(rows[0])==8,'CSV has 25 bons and expected columns')
 check(sum(row[4]=='Utilisé' for row in rows[1:])==1,'CSV withdrawal count matches actual redemption')
+check(rows[0][7]=='Validé par' and all(row[7]=='Responsable · Recette' for row in rows[1:] if row[4]=='Utilisé'),'CSV attributes withdrawal to the authenticated employee')
 check(all(b['token'].encode() not in data for b in fixture['bons']),'CSV contains no secret tokens')
 check(request(zip_url,auth=False)[0]!=200,'Anonymous export refused')
 check(request(zip_url.replace('_wpnonce=','_wpnonce=bad'),auth=True)[0]==403,'Invalid export nonce refused')
@@ -67,6 +68,9 @@ for label in ('subscriber', 'seller'):
  code,_,_=request(base+'/wp-admin/admin-post.php?action=cooms_export&format=csv')
  check(code==403,'Limited account cannot export: '+label)
 cookie=admin_cookie
+_,data,_=request(csv_url)
+staff_rows=list(csv.reader(io.StringIO(data.decode('utf-8-sig')),delimiter=';'))
+check(any(row[7]=='Vendeur · Recette' for row in staff_rows[1:]),'CSV records seller attribution after boutique redemption')
 scan=base+'/?cooms_scan=1'
 code,body,headers=request(scan,auth=False)
 check(code==200 and 'Se connecter à l’espace boutique' in body.decode() and 'jsQR.js' not in body.decode(),'Anonymous scanner shows login without camera scripts')
@@ -113,7 +117,7 @@ check(custom_gift in s and date.fromisoformat(selected).strftime('%d/%m/%Y') in 
 links=[html.unescape(x) for x in re.findall(r'href="([^"]+)"',s)]
 custom_csv=next(x for x in links if 'format=csv' in x)
 _,data,_=request(custom_csv);custom_rows=list(csv.reader(io.StringIO(data.decode('utf-8-sig')),delimiter=';'))
-check(len(custom_rows)==3 and all(row[-1]==custom_gift and row[3]==date.fromisoformat(selected).strftime('%d/%m/%Y') for row in custom_rows[1:]),'Custom gift/date exported on both CSV rows')
+check(len(custom_rows)==3 and all(row[6]==custom_gift and row[3]==date.fromisoformat(selected).strftime('%d/%m/%Y') for row in custom_rows[1:]),'Custom gift/date exported on both CSV rows')
 _,body,_=request(scan);lookup_nonce=re.search(r'name="_wpnonce" value="([^"]+)"',body.decode()).group(1)
 _,body,_=request(scan,urllib.parse.urlencode({'code':custom_rows[1][0],'_wpnonce':lookup_nonce}).encode())
 check(custom_gift in body.decode() and 'Valider la remise du cadeau' in body.decode() and 'Une boîte de 4 cookies' not in body.decode(),'Seller lookup displays custom gift without hardcoded box copy')

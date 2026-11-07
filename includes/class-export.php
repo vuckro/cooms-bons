@@ -68,25 +68,32 @@ final class Export {
         if (!$qr) { throw new \RuntimeException('qr'); }
         $image = imagecreatetruecolor(1000, 1320);
         $white = imagecolorallocate($image, 255, 255, 255);
-        $ink = imagecolorallocate($image, 38, 30, 25);
-        $muted = imagecolorallocate($image, 92, 79, 70);
+        $ink = imagecolorallocate($image, 39, 38, 38);
+        $muted = imagecolorallocate($image, 106, 81, 70);
+        $cream = imagecolorallocate($image, 245, 222, 203);
+        $red = imagecolorallocate($image, 197, 44, 29);
         imagefill($image, 0, 0, $white);
+        imagefilledrectangle($image, 0, 0, 999, 240, $cream);
+        imagefilledrectangle($image, 0, 1150, 999, 1319, $cream);
+        $logo = imagecreatefrompng(dirname(COOMS_BONS_FILE) . '/assets/brand/cooms-logo.png');
+        if (!$logo) { throw new \RuntimeException('brand-logo'); }
+        imagecopyresampled($image, $logo, 310, 30, 0, 0, 380, 144, imagesx($logo), imagesy($logo));
+        imagedestroy($logo);
         $font = dirname(COOMS_BONS_FILE) . '/vendor/endroid/qr-code/assets/open_sans.ttf';
         $text = static function (string $value, int $size, int $y, int $color) use ($image, $font): void {
             $box = imagettfbbox($size, 0, $font, $value);
             imagettftext($image, $size, 0, (int) ((1000 - ($box[2] - $box[0])) / 2), $y, $color, $font, $value);
         };
-        $text('COOMS', 48, 110, $ink);
-        $text('Bon cadeau', 19, 168, $muted);
+        $text('Bon cadeau', 24, 218, $red);
         $size = 28;
         do {
             $lines = self::gift_lines($bon->title, $font, $size);
             if (count($lines) * ($size + 10) <= 116) { break; }
             $size--;
         } while ($size >= 12);
-        $baseline = 200 + (116 - count($lines) * ($size + 10)) / 2;
+        $baseline = 250 + (116 - count($lines) * ($size + 10)) / 2;
         foreach ($lines as $line) { $text($line, $size, (int) $baseline, $ink); $baseline += $size + 10; }
-        imagecopy($image, $qr, (int) ((1000 - imagesx($qr)) / 2), 325, 0, 0, imagesx($qr), imagesy($qr));
+        imagecopy($image, $qr, (int) ((1000 - imagesx($qr)) / 2), 370, 0, 0, imagesx($qr), imagesy($qr));
         $text($bon->code, 24, 1010, $ink);
         $text('Valable jusqu’au ' . Store::expiry_label($bon->expires_at) . ' inclus', 21, 1080, $ink);
         $text('Usage unique · Retrait en boutique COOMS', 19, 1180, $muted);
@@ -116,13 +123,13 @@ final class Export {
         header('X-Content-Type-Options: nosniff');
         $out = fopen('php://output', 'wb');
         fwrite($out, "\xEF\xBB\xBF");
-        fputcsv($out, ['Code', 'Lot', 'Création (Genève)', 'Valable jusqu’au', 'Statut', 'Retrait (Genève)', 'Cadeau'], ';', '"', '');
+        fputcsv($out, ['Code', 'Lot', 'Création (Genève)', 'Valable jusqu’au', 'Statut', 'Retrait (Genève)', 'Cadeau', 'Validé par'], ';', '"', '');
         $labels = ['used' => 'Utilisé', 'available' => 'Disponible', 'expired' => 'Expiré'];
         $offset = 0;
         do {
             $rows = Store::bons($lot, $status, 500, $offset, $as_of);
             foreach ($rows as $bon) {
-                $line = [$bon->code, $bon->lot_name, Store::format_date($bon->created_at, true), Store::expiry_label($bon->expires_at), $labels[Store::status($bon, $as_of)], $bon->redeemed_at ? Store::format_date($bon->redeemed_at, true) : '', $bon->title];
+                $line = [$bon->code, $bon->lot_name, Store::format_date($bon->created_at, true), Store::expiry_label($bon->expires_at), $labels[Store::status($bon, $as_of)], $bon->redeemed_at ? Store::format_date($bon->redeemed_at, true) : '', $bon->title, Store::redeemer_label($bon)];
                 fputcsv($out, array_map([self::class, 'cell'], $line), ';', '"', '');
             }
             $offset += count($rows);

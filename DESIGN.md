@@ -266,3 +266,9 @@ Les actions AdminKit gardent les tokens de teinte et d’encre. Si le contraste 
 ### Cohérence géométrique (1.4.1)
 
 Le bloc de visée occupe explicitement100% de la largeur utile du panneau caméra, comme le bouton d’ouverture. La limite de hauteur et le ratio ne doivent jamais transférer une contrainte de largeur : marges latérales symétriques, icône et texte centrés sur le panneau entier, vidéo calée sur le bloc de visée. Les mesures sont vérifiées aussi sur les fenêtres larges et relativement basses, dont1440×780. Les autres gabarits restent inchangés après revue claire/sombre sur60vues.
+
+## Identité COOMS — 1.5
+
+Boutique et bons : logotype rouge officiel du site COOMS, extrait du média `2025/10/cooms_cookies_logotype_rouge.png`, conservé sans déformation. Copie locale autonome `assets/brand/cooms-logo.png`. Palette du site : rouge #E73523, crème #F5DECB, anthracite #272626. Fond boutique #FFF8F2 ; action rouge #C52C1D avec texte blanc pour assurer le contraste, liens #B1271A, secondaire #6A5146. Les états métier gardent vert/orange/rouge et leur libellé. Pas de changement des tokens hôtes AdminKit.
+
+Bon PNG : 1000 × 1320, bande crème avec vrai logo, cadeau personnalisé, QR noir sur blanc non obstrué et marge native préservée, référence et date, pied crème. Icônes webapp dérivées du même logo dans la zone sûre maskable. Tableau : colonne finale « Validé par », nom du compte enregistré lors du retrait ; aucun nom sur le bon imprimable.

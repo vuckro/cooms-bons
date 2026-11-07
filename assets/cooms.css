@@ -893,10 +893,13 @@ body.cb-scan {
   margin-top: 8px;
 }
 .cb-scan {
-  --cb-paper: #f6f7f8;
-  --cb-ink: #24282d;
-  --cb-muted: #626971;
-  --cb-border: #e3e6e9;
+  --cb-paper: #fff8f2;
+  --cb-ink: #272626;
+  --cb-muted: #6a5146;
+  --cb-border: #e4d2c4;
+  --cb-accent: #c52c1d;
+  --cb-link: #b1271a;
+  --cb-accent-hover: #a52317;
 }
 .cb-brand > a {
   font-size: 24px;
@@ -904,6 +907,11 @@ body.cb-scan {
   letter-spacing: 0.03em;
   color: var(--cb-ink);
   text-decoration: none;
+}
+.cb-brand img {
+  display: block;
+  width: 126px;
+  height: auto;
 }
 .cb-next-scan {
   display: block;
@@ -957,7 +965,7 @@ body.cb-scan {
 .cb-viewfinder {
   width: 100%;
   aspect-ratio: 4/3;
-  background: #edf0f2;
+  background: #f5decb;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
@@ -976,7 +984,7 @@ body.cb-scan {
   justify-content: center;
   flex-direction: column;
   gap: 12px;
-  color: #58616a;
+  color: var(--cb-muted);
   text-align: center;
   padding: 24px;
 }

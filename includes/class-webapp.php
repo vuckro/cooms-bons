@@ -19,12 +19,12 @@ final class Webapp {
             'start_url' => Scanner::url(),
             'scope' => home_url('/'),
             'display' => 'standalone',
-            'background_color' => '#f6f7f8',
-            'theme_color' => '#f6f7f8',
+            'background_color' => '#fff8f2',
+            'theme_color' => '#fff8f2',
             'icons' => [
-                ['src' => $icons . 'icon-192.png', 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
-                ['src' => $icons . 'icon-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
-                ['src' => $icons . 'icon-maskable-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
+                ['src' => add_query_arg('ver', COOMS_BONS_VERSION, $icons . 'icon-192.png'), 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => add_query_arg('ver', COOMS_BONS_VERSION, $icons . 'icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => add_query_arg('ver', COOMS_BONS_VERSION, $icons . 'icon-maskable-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
             ],
         ];
     }

@@ -14,7 +14,8 @@ session='cooms-camera-qa'
 (root/'output/browser').mkdir(parents=True,exist_ok=True)
 video=root/'output/camera.y4m'
 subprocess.run(['ffmpeg','-y','-loglevel','error','-loop','1','-i',str(root/'output/camera-bon.png'),'-vf','scale=-2:460,pad=640:480:(ow-iw)/2:(oh-ih)/2:color=white','-t','3','-r','10','-pix_fmt','yuv420p',str(video)],check=True)
-config={'browser':{'browserName':'chromium','isolated':True,'launchOptions':{'channel':'chrome','args':['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream','--use-file-for-fake-video-capture='+str(video)]},'contextOptions':{'viewport':{'width':1440,'height':1000}}}}
+config={'browser':{'browserName':'chromium','isolated':True,'launchOptions':{'channel':os.environ.get('PW_BROWSER_CHANNEL','chrome'),'args':['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream','--use-file-for-fake-video-capture='+str(video)]},'contextOptions':{'viewport':{'width':1440,'height':1000}}}}
+if os.environ.get('PW_BROWSER_EXECUTABLE'): config['browser']['launchOptions']['executablePath']=os.environ['PW_BROWSER_EXECUTABLE']
 config_path=root/'output/browser-config.json'; config_path.write_text(json.dumps(config))
 state_path=root/'output/browser-auth.json'; state_path.write_text(json.dumps({'cookies':f['accounts']['admin']['cookies'],'origins':[]})); state_path.chmod(0o600)
 source=(root/'tests/browser-flow.js').read_text().strip().removesuffix(';')

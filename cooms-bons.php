@@ -2,7 +2,7 @@
 /**
  * Plugin Name: COOMS Bons
  * Description: Bons cadeaux anonymes par lots et retraits sécurisés en boutique.
- * Version: 1.4.1
+ * Version: 1.5.0
  * Requires at least: 6.4
  * Requires PHP: 8.1
  * Author: Valentin Vuckovic
@@ -12,7 +12,7 @@
 namespace Cooms\Bons;
 defined('ABSPATH') || exit;
 define('COOMS_BONS_FILE', __FILE__);
-define('COOMS_BONS_VERSION', '1.4.1');
+define('COOMS_BONS_VERSION', '1.5.0');
 require_once __DIR__ . '/includes/class-store.php';
 require_once __DIR__ . '/includes/class-scanner.php';
 require_once __DIR__ . '/includes/class-webapp.php';
