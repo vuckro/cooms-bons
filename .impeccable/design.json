@@ -366,6 +366,14 @@
       "safeAreas": true,
       "cameraMaxHeight": "min(42svh,420px)",
       "hostContrast": "local primary background adjustment only below 4.5:1; host tokens untouched"
+    },
+    "cameraGeometry": {
+      "version": "1.4.1",
+      "width": "100% explicit",
+      "alignment": "same left edge and width as camera action; idle label centered on entire panel",
+      "tolerance": "less than 1 CSS pixel",
+      "activeVideo": "matches preview width and height",
+      "review": "60 admin views; 9 Chromium viewport pairs; 8 WebKit viewport pairs"
     }
   },
   "components": [

@@ -951,6 +951,7 @@ body.cb-scan {
   padding: 16px;
 }
 .cb-viewfinder {
+  width: 100%;
   aspect-ratio: 4/3;
   background: #edf0f2;
   border-radius: 10px;
