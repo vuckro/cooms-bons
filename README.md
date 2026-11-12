@@ -1,6 +1,6 @@
 # COOMS Bons
 
-Plugin WordPress de bons anonymes à usage unique : lots pour la Fondation, QR codes individuels, retrait physique en boutique et réconciliation CSV. Version 1.7.1.
+Plugin WordPress de bons anonymes à usage unique : lots pour la Fondation, QR codes individuels, retrait physique en boutique et réconciliation CSV. Version 1.8.0.
 
 ## Prérequis
 
@@ -132,3 +132,9 @@ Chaque lot peut recevoir une description facultative de 2 000 caractères, saisi
 - **Cadeau et valeur séparés** : chaque lot distingue le nom du cadeau (`title`) et sa valeur unitaire en centimes (`value_cents`, ex. `Boîte de 4 cookies` et `20 CHF`). Les lots historiques de forme `Cadeau — 20 CHF` sont migrés automatiquement (schéma 3). Les compteurs affichent les montants émis, disponibles à retirer, retirés et expirés par lot et au total, même entre lots de montants différents. Le CSV ajoute `Valeur unitaire (CHF)`, `Montant retiré (CHF)` et `Texte de retrait` après les huit colonnes existantes.
 - **Texte de retrait par lot** : modifiable à la création et sur un lot existant (`Retrait en boutique COOMS` par défaut, ex. `Retrait en boutique Cornavin` ou `Terrassière`), répercuté sur l’aperçu, les bons PNG, l’écran de retrait et le CSV.
 - **Accès employés cloisonnés** : les comptes `Vendeur COOMS` sont bloqués hors des écrans autorisés (scanner, guide boutique et réservations FluentBooking si accordées), sans accès au tableau de bord, profil, comptes, outils ou réglages WordPress. Le responsable peut définir ou remplacer directement le mot de passe d’un téléphone boutique depuis `COOMS Bons → Accès employés`.
+
+### Archivage et désarchivage réversibles (1.8)
+
+- **Archivage de lot ou de bon individuel** (schéma 4 : colonne `archived_at` sur `cooms_lots` et `cooms_bons`) : permet d’écarter un lot créé par erreur ou un bon isolé sans perdre l’historique d’audit.
+- **Sécurité boutique et exports** : tout bon archivé (ou issu d’un lot archivé) non retiré passe en statut `Archivé`, est refusé de manière atomique au scanner (`Store::redeem`), n’est pas exportable en ZIP et peut être désarchivé à tout moment pour retrouver son état réel.
+- **Intégrité financière** : les bons archivés non retirés sont exclus des compteurs et montants actifs (`Bons émis`, `Disponibles`, `Expirés`), tandis que tout bon déjà retiré (`Retiré`) conserve son statut, son attribution et sa valeur retirée en CHF.

@@ -14,6 +14,8 @@ final class Plugin {
         add_action('admin_post_cooms_create', [$this, 'create']);
         add_action('admin_post_cooms_description', [$this, 'description']);
         add_action('admin_post_cooms_pickup', [$this, 'pickup']);
+        add_action('admin_post_cooms_archive_lot', [$this, 'archive_lot']);
+        add_action('admin_post_cooms_archive_bon', [$this, 'archive_bon']);
         add_action('admin_post_cooms_export', [$this, 'export']);
         add_action('template_redirect', [$this, 'scan'], -100);
     }
@@ -100,21 +102,28 @@ final class Plugin {
         }
         $lot_id = isset($_GET['lot']) ? absint($_GET['lot']) : 0;
         $status = isset($_GET['status']) ? sanitize_key(wp_unslash($_GET['status'])) : '';
-        if (!in_array($status, ['available', 'used', 'expired'], true)) { $status = ''; }
+        if (!in_array($status, ['available', 'used', 'expired', 'archived'], true)) { $status = ''; }
         $page_num = max(1, isset($_GET['paged']) ? absint($_GET['paged']) : 1);
         $counts = Store::counts($lot_id);
         $amounts = Store::amounts($lot_id);
-        $total = $status ? $counts[$status] : $counts['total'];
+        $archived_summary = Store::archived_summary($lot_id);
+        $total = $status === 'archived'
+            ? $archived_summary['bons']
+            : ($status ? $counts[$status] : ($lot_id ? $counts['total'] + $archived_summary['bons'] : $counts['total']));
         $page_num = min($page_num, max(1, (int) ceil($total / 30)));
-        $view = isset($_GET['view']) && $_GET['view'] === 'bons' ? 'bons' : 'lots';
+        $raw_view = isset($_GET['view']) ? sanitize_key(wp_unslash($_GET['view'])) : 'lots';
+        $view = in_array($raw_view, ['lots', 'archived', 'bons'], true) ? $raw_view : 'lots';
         if ($lot_id || $status) { $view = 'bons'; }
         $rows = Store::bons($lot_id, $status, 30, ($page_num - 1) * 30);
-        $lots = Store::lots();
+        $lots = Store::lots('active');
+        $archived_lots = Store::lots('archived');
+        $all_lots = Store::lots('all');
         $lot = $lot_id ? Store::lot($lot_id) : null;
         if ($lot_id && !$lot) { wp_die('Lot introuvable.', '', ['response' => 404]); }
+        $lot_pool = $view === 'archived' ? $archived_lots : $lots;
         $lot_page = max(1, isset($_GET['paged']) ? absint($_GET['paged']) : 1);
-        $lot_page = min($lot_page, max(1, (int) ceil(count($lots) / 30)));
-        $summaries = $view === 'lots' ? Store::lot_summaries(30, ($lot_page - 1) * 30) : [];
+        $lot_page = min($lot_page, max(1, (int) ceil(count($lot_pool) / 30)));
+        $summaries = in_array($view, ['lots', 'archived'], true) ? Store::lot_summaries(30, ($lot_page - 1) * 30, $view === 'archived' ? 'archived' : 'active') : [];
         require dirname(COOMS_BONS_FILE) . '/templates/admin.php';
     }
 
@@ -176,13 +185,53 @@ final class Plugin {
         exit;
     }
 
+    public function archive_lot(): void {
+        if (!current_user_can(Store::MANAGE)) { wp_die('Accès réservé au responsable.', '', ['response' => 403]); }
+        $id = isset($_POST['lot']) && is_scalar($_POST['lot']) ? absint($_POST['lot']) : 0;
+        check_admin_referer('cooms_archive_lot_' . $id);
+        $archive = !empty($_POST['archive']);
+        $result = Store::set_lot_archived($id, $archive);
+        if (is_wp_error($result)) { wp_die(esc_html($result->get_error_message()), '', ['response' => $result->get_error_code() === 'missing' ? 404 : 400, 'back_link' => true]); }
+        $return_to = isset($_POST['return_to']) ? sanitize_key(wp_unslash($_POST['return_to'])) : 'lots';
+        $args = ['page' => 'cooms-bons', ($archive ? 'lot_archived' : 'lot_unarchived') => 1];
+        if ($return_to === 'lot') {
+            $args['lot'] = $id;
+        } elseif ($return_to === 'archived') {
+            $args['view'] = 'archived';
+        }
+        wp_safe_redirect(add_query_arg($args, admin_url('admin.php')), 303);
+        exit;
+    }
+
+    public function archive_bon(): void {
+        if (!current_user_can(Store::MANAGE)) { wp_die('Accès réservé au responsable.', '', ['response' => 403]); }
+        $bon_id = isset($_POST['bon']) && is_scalar($_POST['bon']) ? absint($_POST['bon']) : 0;
+        check_admin_referer('cooms_archive_bon_' . $bon_id);
+        $archive = !empty($_POST['archive']);
+        $lot_id = isset($_POST['lot']) ? absint($_POST['lot']) : 0;
+        $status = isset($_POST['status']) ? sanitize_key(wp_unslash($_POST['status'])) : '';
+        if (!in_array($status, ['available', 'used', 'expired', 'archived'], true)) { $status = ''; }
+        $paged = max(1, isset($_POST['paged']) ? absint($_POST['paged']) : 1);
+        $result = Store::set_bon_archived($bon_id, $archive);
+        $args = ['page' => 'cooms-bons', 'view' => 'bons', 'paged' => $paged];
+        if ($lot_id) { $args['lot'] = $lot_id; }
+        if ($status) { $args['status'] = $status; }
+        if (is_wp_error($result)) {
+            $args['archive_error'] = $result->get_error_code();
+        } else {
+            $args[$archive ? 'bon_archived' : 'bon_unarchived'] = 1;
+        }
+        wp_safe_redirect(add_query_arg($args, admin_url('admin.php')), 303);
+        exit;
+    }
+
     public function export(): void {
         if (!current_user_can(Store::MANAGE)) { wp_die('Vous ne pouvez pas exporter les bons.', '', ['response' => 403]); }
         check_admin_referer('cooms_export');
         $lot = isset($_GET['lot']) ? absint($_GET['lot']) : 0;
         $format = isset($_GET['format']) ? sanitize_key(wp_unslash($_GET['format'])) : '';
         $status = isset($_GET['status']) ? sanitize_key(wp_unslash($_GET['status'])) : '';
-        if (!in_array($status, ['', 'used', 'available', 'expired'], true)) { wp_die('Filtre invalide.', '', ['response' => 400]); }
+        if (!in_array($status, ['', 'used', 'available', 'expired', 'archived'], true)) { wp_die('Filtre invalide.', '', ['response' => 400]); }
         if ($lot && !Store::lot($lot)) { wp_die('Lot introuvable.', '', ['response' => 404]); }
         if ($format === 'zip' && $lot) { Export::zip($lot); }
         if ($format === 'csv') { Export::csv($lot, $status); }

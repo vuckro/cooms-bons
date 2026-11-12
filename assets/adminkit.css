@@ -25,14 +25,14 @@ body.adminkit .cb-app p { font-size: inherit; }
 body.adminkit .cb-app :is(.cb-row-meta, .cb-table thead th, .cb-status) {
   font-size: var(--ak-text-xs, 12px);
 }
-body.adminkit .cb-app :is(.cb-field p, .cb-section-heading p, .cb-submission-note, .cb-counts dt, .cb-count-amount, .cb-download) {
+body.adminkit .cb-app :is(.cb-field p, .cb-section-heading p, .cb-submission-note, .cb-counts dt, .cb-count-amount, .cb-download, .cb-link-action, .cb-archived-summary) {
   font-size: var(--ak-text-s, 13px);
 }
 body.adminkit .cb-app .cb-table { font-size: var(--ak-text-m, 14px); }
 body.adminkit .cb-app .cb-reference {
   font-family: var(--ak-font-mono, ui-monospace, monospace);
 }
-body.adminkit .cb-app .cb-work {
+body.adminkit .cb-app :is(.cb-work, .cb-archived-banner) {
   background: var(--ak-card-bg, var(--cb-surface));
   border-color: var(--ak-card-border, var(--cb-border));
   border-radius: var(--ak-card-radius, 12px);
@@ -43,7 +43,7 @@ body.adminkit .cb-app .cb-table thead th {
 body.adminkit .cb-app .cb-table tbody tr:hover {
   background: var(--ak-hover-bg, var(--cb-paper));
 }
-body.adminkit .cb-app :is(.cb-tabs a span, .cb-used) {
+body.adminkit .cb-app :is(.cb-tabs a span, .cb-used, .cb-archived) {
   background: var(--cb-paper);
   color: var(--cb-muted);
 }

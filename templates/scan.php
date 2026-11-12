@@ -4,6 +4,7 @@ defined('ABSPATH') || exit;
 $states = [
     'available' => ['Bon valide', 'Ce cadeau peut être remis après votre confirmation.'],
     'used' => ['Bon déjà utilisé', 'Une remise a déjà été enregistrée pour ce bon.'],
+    'archived' => ['Bon archivé', 'Ce bon a été archivé par le responsable et ne peut pas être utilisé.'],
     'success' => ['Remise enregistrée', 'Vous pouvez remettre le cadeau indiqué ci-dessous.'],
     'expired' => ['Bon expiré', 'La date limite est dépassée. Ce bon ne peut plus être utilisé.'],
     'missing' => ['Bon introuvable', 'Vérifiez le QR code présenté ou contactez le responsable COOMS.'],

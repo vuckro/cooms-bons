@@ -35,8 +35,10 @@ final class Store {
             created_at datetime NOT NULL,
             expires_at datetime NOT NULL,
             created_by bigint(20) unsigned NOT NULL,
+            archived_at datetime DEFAULT NULL,
             PRIMARY KEY  (id),
-            UNIQUE KEY request_key (request_key)
+            UNIQUE KEY request_key (request_key),
+            KEY archived_at (archived_at)
         ) ENGINE=InnoDB $collate;");
         dbDelta("CREATE TABLE $bons (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -47,12 +49,14 @@ final class Store {
             expires_at datetime NOT NULL,
             redeemed_at datetime DEFAULT NULL,
             redeemed_by bigint(20) unsigned DEFAULT NULL,
+            archived_at datetime DEFAULT NULL,
             PRIMARY KEY  (id),
             UNIQUE KEY token (token),
             UNIQUE KEY code (code),
             KEY lot_id (lot_id),
             KEY expires_at (expires_at),
-            KEY redeemed_at (redeemed_at)
+            KEY redeemed_at (redeemed_at),
+            KEY archived_at (archived_at)
         ) ENGINE=InnoDB $collate;");
         if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($lots))) !== $lots ||
             $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($bons))) !== $bons) {
@@ -66,13 +70,14 @@ final class Store {
             $admin->add_cap(self::MANAGE);
             $admin->add_cap(self::REDEEM);
         }
-        foreach (['description', 'value_cents', 'pickup_text'] as $column) {
+        foreach (['description', 'value_cents', 'pickup_text', 'archived_at'] as $column) {
             if ($wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM $lots LIKE %s", $column)) !== $column) { return; }
         }
-        if (get_option('cooms_bons_schema') !== '3') {
+        if ($wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM $bons LIKE %s", 'archived_at')) !== 'archived_at') { return; }
+        if (!in_array(get_option('cooms_bons_schema'), ['3', '4'], true)) {
             self::migrate_legacy_lots();
         }
-        update_option('cooms_bons_schema', '3', false);
+        update_option('cooms_bons_schema', '4', false);
     }
 
     /** Split historical "Gift — XX CHF" titles into gift name + centime value without losing printed labels. */
@@ -189,6 +194,7 @@ final class Store {
 
     public static function status(object $bon, ?string $at = null): string {
         if ($bon->redeemed_at) { return 'used'; }
+        if (!empty($bon->archived_at) || !empty($bon->lot_archived_at)) { return 'archived'; }
         return $bon->expires_at <= ($at ?? self::now()) ? 'expired' : 'available';
     }
 
@@ -282,7 +288,14 @@ final class Store {
         global $wpdb;
         if (!preg_match('/^[a-f0-9]{64}$/D', $token)) { return null; }
         $bons = self::table('bons'); $lots = self::table('lots');
-        return $wpdb->get_row($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title, l.value_cents, l.pickup_text FROM $bons b INNER JOIN $lots l ON l.id=b.lot_id WHERE b.token=%s", $token));
+        return $wpdb->get_row($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title, l.value_cents, l.pickup_text, l.archived_at AS lot_archived_at FROM $bons b INNER JOIN $lots l ON l.id=b.lot_id WHERE b.token=%s", $token));
+    }
+
+    public static function bon(int $id): ?object {
+        global $wpdb;
+        if ($id < 1) { return null; }
+        $bons = self::table('bons'); $lots = self::table('lots');
+        return $wpdb->get_row($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title, l.value_cents, l.pickup_text, l.archived_at AS lot_archived_at FROM $bons b INNER JOIN $lots l ON l.id=b.lot_id WHERE b.id=%d", $id));
     }
 
     public static function find_code(string $code): ?object {
@@ -292,11 +305,23 @@ final class Store {
         return $token ? self::find($token) : null;
     }
 
-    public static function lot_summaries(int $limit = 30, int $offset = 0): array {
+    public static function lot_summaries(int $limit = 30, int $offset = 0, string $state = 'active'): array {
         global $wpdb;
         $l = self::table('lots'); $b = self::table('bons'); $now = self::now();
-        return $wpdb->get_results($wpdb->prepare("SELECT l.*, COALESCE(c.used,0) AS used, COALESCE(c.available,0) AS available, COALESCE(c.expired,0) AS expired FROM $l l LEFT JOIN
-            (SELECT lot_id, SUM(redeemed_at IS NOT NULL) AS used, SUM(redeemed_at IS NULL AND expires_at > %s) AS available, SUM(redeemed_at IS NULL AND expires_at <= %s) AS expired FROM $b GROUP BY lot_id) c ON c.lot_id=l.id ORDER BY l.id DESC LIMIT %d OFFSET %d", $now, $now, $limit, $offset));
+        $filter = $state === 'archived' ? 'l.archived_at IS NOT NULL' : ($state === 'all' ? '1=1' : 'l.archived_at IS NULL');
+        return $wpdb->get_results($wpdb->prepare("SELECT l.*,
+            COALESCE(c.used,0) AS used,
+            COALESCE(CASE WHEN l.archived_at IS NULL THEN c.available ELSE 0 END, 0) AS available,
+            COALESCE(CASE WHEN l.archived_at IS NULL THEN c.expired ELSE 0 END, 0) AS expired,
+            COALESCE(CASE WHEN l.archived_at IS NULL THEN c.archived ELSE c.unredeemed END, 0) AS archived
+            FROM $l l LEFT JOIN
+            (SELECT lot_id,
+                SUM(redeemed_at IS NOT NULL) AS used,
+                SUM(redeemed_at IS NULL AND archived_at IS NULL AND expires_at > %s) AS available,
+                SUM(redeemed_at IS NULL AND archived_at IS NULL AND expires_at <= %s) AS expired,
+                SUM(redeemed_at IS NULL AND archived_at IS NOT NULL) AS archived,
+                SUM(redeemed_at IS NULL) AS unredeemed
+                FROM $b GROUP BY lot_id) c ON c.lot_id=l.id WHERE $filter ORDER BY l.id DESC LIMIT %d OFFSET %d", $now, $now, $limit, $offset));
     }
 
     /** No check-then-write: eligibility and consumption occur in one database statement. */
@@ -304,10 +329,16 @@ final class Store {
         global $wpdb;
         if (!current_user_can(self::REDEEM)) { return ['result' => 'forbidden', 'bon' => null]; }
         if (!preg_match('/^[a-f0-9]{64}$/D', $token)) { return ['result' => 'missing', 'bon' => null]; }
-        $table = self::table('bons'); $now = self::now();
-        $updated = $wpdb->query($wpdb->prepare("UPDATE $table SET redeemed_at=%s, redeemed_by=%d WHERE token=%s AND redeemed_at IS NULL AND expires_at > %s", $now, get_current_user_id(), $token, $now));
+        $table = self::table('bons'); $lots = self::table('lots'); $now = self::now();
+        $updated = $wpdb->query($wpdb->prepare(
+            "UPDATE $table b INNER JOIN $lots l ON l.id=b.lot_id SET b.redeemed_at=%s, b.redeemed_by=%d WHERE b.token=%s AND b.redeemed_at IS NULL AND b.archived_at IS NULL AND l.archived_at IS NULL AND b.expires_at > %s",
+            $now,
+            get_current_user_id(),
+            $token,
+            $now
+        ));
         $bon = self::find($token);
-        return ['result' => $updated === false ? 'error' : ($updated === 1 ? 'success' : ($bon ? self::status($bon) : 'missing')), 'bon' => $bon];
+        return ['result' => $updated === false ? 'error' : ($updated === 1 ? 'success' : ($bon ? self::status($bon, $now) : 'missing')), 'bon' => $bon];
     }
 
     public static function lot(int $id): ?object {
@@ -331,17 +362,59 @@ final class Store {
             ? new \WP_Error('storage', 'La description n’a pas pu être enregistrée. Réessayez.') : true;
     }
 
-    public static function lots(): array {
+    /** Archive or restore a batch; historical redemptions always remain intact. */
+    public static function set_lot_archived(int $id, bool $archived) {
+        if (!current_user_can(self::MANAGE)) { return new \WP_Error('forbidden', 'Accès réservé au responsable.'); }
+        if ($id < 1 || !self::lot($id)) { return new \WP_Error('missing', 'Ce lot est introuvable.'); }
         global $wpdb;
-        return $wpdb->get_results('SELECT * FROM ' . self::table('lots') . ' ORDER BY id DESC');
+        $updated = $wpdb->query($wpdb->prepare(
+            'UPDATE ' . self::table('lots') . ' SET archived_at = ' . ($archived ? '%s' : 'NULL') . ' WHERE id = %d',
+            ...($archived ? [self::now(), $id] : [$id])
+        ));
+        return $updated === false
+            ? new \WP_Error('storage', 'Le statut d’archivage du lot n’a pas pu être mis à jour.')
+            : true;
+    }
+
+    /** Archive or restore an individual unredeemed voucher. */
+    public static function set_bon_archived(int $id, bool $archived) {
+        if (!current_user_can(self::MANAGE)) { return new \WP_Error('forbidden', 'Accès réservé au responsable.'); }
+        $bon = self::bon($id);
+        if (!$bon) { return new \WP_Error('missing', 'Ce bon est introuvable.'); }
+        if ($bon->redeemed_at !== null) {
+            return new \WP_Error('used', 'Un bon déjà retiré en boutique ne peut pas être archivé.');
+        }
+        if (!empty($bon->lot_archived_at)) {
+            return new \WP_Error('lot_archived', 'Ce lot est archivé. Désarchivez d’abord le lot pour gérer ses bons individuellement.');
+        }
+        global $wpdb;
+        $updated = $wpdb->query($wpdb->prepare(
+            'UPDATE ' . self::table('bons') . ' SET archived_at = ' . ($archived ? '%s' : 'NULL') . ' WHERE id = %d AND redeemed_at IS NULL',
+            ...($archived ? [self::now(), $id] : [$id])
+        ));
+        return $updated === false
+            ? new \WP_Error('storage', 'Le statut d’archivage du bon n’a pas pu être mis à jour.')
+            : true;
+    }
+
+    public static function lots(string $state = 'active'): array {
+        global $wpdb;
+        $where = $state === 'archived' ? 'WHERE archived_at IS NOT NULL ' : ($state === 'all' ? '' : 'WHERE archived_at IS NULL ');
+        return $wpdb->get_results('SELECT * FROM ' . self::table('lots') . ' ' . $where . 'ORDER BY id DESC');
     }
 
     private static function where(int $lot, string $status, ?string $at = null): array {
         $sql = '1=1'; $args = [];
         if ($lot) { $sql .= ' AND b.lot_id=%d'; $args[] = $lot; }
-        if ($status === 'used') { $sql .= ' AND b.redeemed_at IS NOT NULL'; }
-        if ($status === 'available' || $status === 'expired') {
-            $sql .= ' AND b.redeemed_at IS NULL AND b.expires_at ' . ($status === 'available' ? '>' : '<=') . ' %s'; $args[] = $at ?? self::now();
+        if ($status === 'used') {
+            $sql .= ' AND b.redeemed_at IS NOT NULL';
+        } elseif ($status === 'available' || $status === 'expired') {
+            $sql .= ' AND b.redeemed_at IS NULL AND b.archived_at IS NULL AND l.archived_at IS NULL AND b.expires_at ' . ($status === 'available' ? '>' : '<=') . ' %s';
+            $args[] = $at ?? self::now();
+        } elseif ($status === 'archived') {
+            $sql .= ' AND b.redeemed_at IS NULL AND (b.archived_at IS NOT NULL OR l.archived_at IS NOT NULL)';
+        } elseif (!$lot) {
+            $sql .= ' AND (b.redeemed_at IS NOT NULL OR (b.archived_at IS NULL AND l.archived_at IS NULL))';
         }
         return [$sql, $args];
     }
@@ -351,7 +424,7 @@ final class Store {
         [$where, $args] = self::where($lot, $status, $at);
         $b = self::table('bons'); $l = self::table('lots');
         $args[] = max(1, $limit); $args[] = max(0, $offset);
-        return $wpdb->get_results($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title, l.value_cents, l.pickup_text, u.display_name AS redeemer_name FROM $b b INNER JOIN $l l ON b.lot_id=l.id LEFT JOIN {$wpdb->users} u ON u.ID=b.redeemed_by WHERE $where ORDER BY b.id DESC LIMIT %d OFFSET %d", $args));
+        return $wpdb->get_results($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title, l.value_cents, l.pickup_text, l.archived_at AS lot_archived_at, u.display_name AS redeemer_name FROM $b b INNER JOIN $l l ON b.lot_id=l.id LEFT JOIN {$wpdb->users} u ON u.ID=b.redeemed_by WHERE $where ORDER BY b.id DESC LIMIT %d OFFSET %d", $args));
     }
 
     /** Attribution is private to management; deleted accounts retain their audit ID. */
@@ -363,24 +436,42 @@ final class Store {
 
     public static function counts(int $lot = 0): array {
         global $wpdb;
-        [$where, $args] = self::where($lot, '');
         $now = self::now();
-        $sql = 'SELECT COUNT(*) AS total, COALESCE(SUM(redeemed_at IS NOT NULL),0) AS used, COALESCE(SUM(redeemed_at IS NULL AND expires_at > %s),0) AS available, COALESCE(SUM(redeemed_at IS NULL AND expires_at <= %s),0) AS expired FROM ' . self::table('bons') . " b WHERE $where";
-        return array_map('intval', (array) $wpdb->get_row($wpdb->prepare($sql, array_merge([$now, $now], $args)), ARRAY_A));
+        $b = self::table('bons'); $l = self::table('lots');
+        $lot_sql = $lot > 0 ? $wpdb->prepare(' AND b.lot_id=%d', $lot) : '';
+        $sql = "SELECT
+            COALESCE(SUM(b.redeemed_at IS NOT NULL OR (b.archived_at IS NULL AND l.archived_at IS NULL)),0) AS total,
+            COALESCE(SUM(b.redeemed_at IS NOT NULL),0) AS used,
+            COALESCE(SUM(b.redeemed_at IS NULL AND b.archived_at IS NULL AND l.archived_at IS NULL AND b.expires_at > %s),0) AS available,
+            COALESCE(SUM(b.redeemed_at IS NULL AND b.archived_at IS NULL AND l.archived_at IS NULL AND b.expires_at <= %s),0) AS expired
+            FROM $b b INNER JOIN $l l ON l.id=b.lot_id WHERE 1=1$lot_sql";
+        return array_map('intval', (array) $wpdb->get_row($wpdb->prepare($sql, [$now, $now]), ARRAY_A));
     }
 
     /** Exact centime totals across one lot or all lots, even when unit values differ. */
     public static function amounts(int $lot = 0): array {
         global $wpdb;
-        [$where, $args] = self::where($lot, '');
         $now = self::now();
         $b = self::table('bons'); $l = self::table('lots');
-        $sql = "SELECT COALESCE(SUM(l.value_cents),0) AS total_cents,
+        $lot_sql = $lot > 0 ? $wpdb->prepare(' AND b.lot_id=%d', $lot) : '';
+        $sql = "SELECT
+            COALESCE(SUM(CASE WHEN b.redeemed_at IS NOT NULL OR (b.archived_at IS NULL AND l.archived_at IS NULL) THEN l.value_cents ELSE 0 END),0) AS total_cents,
             COALESCE(SUM(CASE WHEN b.redeemed_at IS NOT NULL THEN l.value_cents ELSE 0 END),0) AS used_cents,
-            COALESCE(SUM(CASE WHEN b.redeemed_at IS NULL AND b.expires_at > %s THEN l.value_cents ELSE 0 END),0) AS available_cents,
-            COALESCE(SUM(CASE WHEN b.redeemed_at IS NULL AND b.expires_at <= %s THEN l.value_cents ELSE 0 END),0) AS expired_cents
-            FROM $b b INNER JOIN $l l ON l.id=b.lot_id WHERE $where";
-        return array_map('intval', (array) $wpdb->get_row($wpdb->prepare($sql, array_merge([$now, $now], $args)), ARRAY_A));
+            COALESCE(SUM(CASE WHEN b.redeemed_at IS NULL AND b.archived_at IS NULL AND l.archived_at IS NULL AND b.expires_at > %s THEN l.value_cents ELSE 0 END),0) AS available_cents,
+            COALESCE(SUM(CASE WHEN b.redeemed_at IS NULL AND b.archived_at IS NULL AND l.archived_at IS NULL AND b.expires_at <= %s THEN l.value_cents ELSE 0 END),0) AS expired_cents
+            FROM $b b INNER JOIN $l l ON l.id=b.lot_id WHERE 1=1$lot_sql";
+        return array_map('intval', (array) $wpdb->get_row($wpdb->prepare($sql, [$now, $now]), ARRAY_A));
+    }
+
+    /** Count and total nominal CHF value (in cents) of unredeemed archived vouchers. */
+    public static function archived_summary(int $lot = 0): array {
+        global $wpdb;
+        $b = self::table('bons'); $l = self::table('lots');
+        $lot_sql = $lot > 0 ? $wpdb->prepare(' AND b.lot_id=%d', $lot) : '';
+        $sql = "SELECT COUNT(*) AS bons, COALESCE(SUM(l.value_cents),0) AS cents
+            FROM $b b INNER JOIN $l l ON l.id=b.lot_id
+            WHERE b.redeemed_at IS NULL AND (b.archived_at IS NOT NULL OR l.archived_at IS NOT NULL)$lot_sql";
+        return array_map('intval', (array) $wpdb->get_row($sql, ARRAY_A));
     }
 
     public static function url(object $bon): string {

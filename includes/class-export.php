@@ -11,16 +11,25 @@ final class Export {
     public static function zip(int $lot_id): void {
         $lot = Store::lot($lot_id);
         if (!$lot) { wp_die('Lot introuvable.', '', ['response' => 404]); }
+        if (!empty($lot->archived_at)) {
+            wp_die('Ce lot est archivé. Désarchivez-le avant de télécharger ses bons.', '', ['response' => 409, 'back_link' => true]);
+        }
         if (!self::ready()) { wp_die('Export indisponible : vérifiez GD, FreeType, ZIP et les dépendances du plugin.', '', ['response' => 503]); }
+        $bons = Store::bons($lot_id, '', Store::MAX_BATCH);
+        if (count($bons) !== (int) $lot->quantity) {
+            wp_die('Le lot est incomplet : impossible de préparer le ZIP.', '', ['response' => 503]);
+        }
+        $active_bons = array_values(array_filter($bons, static fn($bon) => empty($bon->archived_at)));
+        if (!$active_bons) {
+            wp_die('Tous les bons de ce lot sont archivés. Désarchivez au moins un bon avant de télécharger le ZIP.', '', ['response' => 409, 'back_link' => true]);
+        }
         require_once dirname(COOMS_BONS_FILE) . '/vendor/autoload.php';
         $path = tempnam(sys_get_temp_dir(), 'cooms-');
         if (!$path) { wp_die('Impossible de préparer le téléchargement.', '', ['response' => 503]); }
         $zip = new \ZipArchive();
         try {
             if ($zip->open($path, \ZipArchive::OVERWRITE) !== true) { throw new \RuntimeException('zip'); }
-            $bons = Store::bons($lot_id, '', Store::MAX_BATCH);
-            if (count($bons) !== (int) $lot->quantity) { throw new \RuntimeException('incomplete'); }
-            foreach ($bons as $bon) {
+            foreach ($active_bons as $bon) {
                 if (!$zip->addFromString($bon->code . '.png', self::png($bon))) { throw new \RuntimeException('image'); }
             }
             if (!$zip->close()) { throw new \RuntimeException('close'); }
@@ -137,7 +146,7 @@ final class Export {
         $out = fopen('php://output', 'wb');
         fwrite($out, "\xEF\xBB\xBF");
         fputcsv($out, ['Code', 'Lot', 'Création (Genève)', 'Valable jusqu’au', 'Statut', 'Retrait (Genève)', 'Cadeau', 'Validé par', 'Valeur unitaire (CHF)', 'Montant retiré (CHF)', 'Texte de retrait'], ';', '"', '');
-        $labels = ['used' => 'Utilisé', 'available' => 'Disponible', 'expired' => 'Expiré'];
+        $labels = ['used' => 'Utilisé', 'available' => 'Disponible', 'expired' => 'Expiré', 'archived' => 'Archivé'];
         $offset = 0;
         do {
             $rows = Store::bons($lot, $status, 500, $offset, $as_of);

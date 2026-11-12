@@ -284,3 +284,7 @@ Les commandes caméra sont empilées en pleine largeur, y compris pendant la dem
 Le formulaire de création associe sur une rangée deux champs complémentaires (`Nom du cadeau` et `Valeur unitaire (CHF)` en chiffres tabulaires), repliés sur une colonne à 600 px et moins, suivis du `Texte de retrait`. L’aperçu latéral met à jour en direct le libellé complet, la mention de retrait, la validité et la valeur totale du lot. Sur un lot existant, le texte de retrait et la description interne utilisent deux divulgations natives côte à côte, sans carte imbriquée.
 
 Les quatre compteurs de synthèse affichent sous chaque volume le montant correspondant en CHF (`tabular-nums`), et la table des lots expose une colonne `Montant retiré` accompagnée du reste à retirer. Dans `Accès employés`, chaque ligne indique le périmètre effectif du compte et propose une divulgation sobre pour enregistrer directement le mot de passe d’un appareil boutique, en conservant les tokens et densités AdminKit.
+
+## Archivage réversible — 1.8
+
+Les onglets de gestion ajoutent « Lots archivés » entre « Lots » et « Tous les bons ». Les bons archivés portent une pastille neutre bordée (`.cb-archived`) distincte de la disponibilité verte, de l’expiration ambre et des retraits effectués. Un bandeau dédié signale un lot archivé en haut de sa fiche avec l’action « Désarchiver le lot », tout en masquant le téléchargement ZIP. En boutique, un bon archivé affiche un verdict rouge explicite (« Bon archivé ») sans bouton de validation.

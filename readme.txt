@@ -4,7 +4,7 @@ Tags: qr-code, gift-vouchers
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.7.1
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,11 @@ Non. Seule la confirmation explicite d’un vendeur autorisé enregistre la remi
 Non. Les données sont conservées pour préserver le rapprochement des retraits.
 
 == Changelog ==
+
+= 1.8.0 =
+* Archivage et désarchivage réversible des lots complets et des bons individuels non retirés.
+* Refus immédiat en boutique des bons archivés (scan QR et saisie manuelle) et blocage du téléchargement ZIP sur un lot archivé.
+* Exclusion des bons archivés non retirés des montants disponibles/expirés tout en conservant intacts les retraits déjà effectués (`Retirés`) et leur suivi CSV.
 
 = 1.7.1 =
 * Désactivation du buffer et du sélecteur de langue Weglot sur les routes autonomes boutique (`?cooms_scan`, `?cooms_bon`, `?cooms_manifest`).

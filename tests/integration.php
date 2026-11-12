@@ -17,7 +17,7 @@ $intercept_mail = null;
 try {
     wp_set_current_user(1);
     $check(current_user_can(Store::MANAGE), 'Administrator can manage bons');
-    $check(get_option('cooms_bons_schema') === '3', 'Schema v3 migration installed');
+    $check(get_option('cooms_bons_schema') === '4', 'Schema v4 migration installed');
     $manifest = Webapp::manifest();
     $check($manifest['display'] === 'standalone' && $manifest['start_url'] === Scanner::url(), 'Webapp opens the scanner in standalone mode');
     $check($manifest['scope'] === home_url('/') && $manifest['id'] === Scanner::url(), 'Webapp identity and scope use the actual WordPress home');
@@ -223,6 +223,36 @@ try {
     $long_bon = clone $custom_bons[0]; $long_bon->title = str_repeat('W',190); $long_bon->pickup_text = str_repeat('R', 160);
     $check(getimagesizefromstring(Export::png($long_bon))['mime'] === 'image/png', '190-character gift and 160-character pickup fit printable export');
     $check(Store::lot($id)->title === Store::TITLE && (int) Store::lot($id)->value_cents === Store::DEFAULT_CENTS && Store::lot($id)->pickup_text === Store::DEFAULT_PICKUP, 'Default lot gift, value and pickup remain consistent');
+
+    // Archiving & unarchiving: individual vouchers and full batches.
+    wp_set_current_user($seller_id);
+    $check(is_wp_error(Store::set_bon_archived((int) $bons[4]->id, true)) && is_wp_error(Store::set_lot_archived($id, true)), 'Seller cannot archive vouchers or lots');
+    wp_set_current_user(1);
+    $check(is_wp_error(Store::set_bon_archived((int) $bons[0]->id, true)), 'Already redeemed voucher cannot be archived');
+    $check(Store::set_bon_archived((int) $bons[4]->id, true) === true, 'Archive individual unredeemed voucher');
+    $check(Store::status(Store::find($bons[4]->token)) === 'archived', 'Archived voucher reports archived status');
+    $check(Store::counts($id) === ['total' => 24, 'used' => 2, 'available' => 21, 'expired' => 1], 'Archived voucher excluded from active counts');
+    $check(Store::amounts($id) === ['total_cents' => 48000, 'used_cents' => 4000, 'available_cents' => 42000, 'expired_cents' => 2000], 'Archived voucher excluded from active CHF amounts');
+    $check(Store::archived_summary($id) === ['bons' => 1, 'cents' => 2000], 'Archived summary tracks excluded voucher and CHF');
+    $check(count(Store::bons($id, 'archived')) === 1 && count(Store::bons($id, '')) === 25, 'Lot view lists all bons including archived while archived filter isolates them');
+    wp_set_current_user($seller_id);
+    $check(Store::redeem($bons[4]->token)['result'] === 'archived' && Store::find($bons[4]->token)->redeemed_at === null, 'Boutique scanner refuses archived voucher atomically');
+    wp_set_current_user(1);
+    $check(Store::set_bon_archived((int) $bons[4]->id, false) === true, 'Unarchive individual voucher');
+    $check(Store::status(Store::find($bons[4]->token)) === 'available' && Store::counts($id) === ['total' => 25, 'used' => 2, 'available' => 22, 'expired' => 1] && Store::archived_summary($id) === ['bons' => 0, 'cents' => 0], 'Unarchived voucher regains available status and active counts');
+
+    $check(Store::set_lot_archived($id, true) === true && !empty(Store::lot($id)->archived_at), 'Archive entire batch');
+    $check(empty(array_filter(Store::lots('active'), static fn($row) => (int) $row->id === $id)) && !empty(array_filter(Store::lots('archived'), static fn($row) => (int) $row->id === $id)), 'Archived batch moves from active list to archived tab');
+    $check(Store::status(Store::find($bons[0]->token)) === 'used' && Store::status(Store::find($bons[5]->token)) === 'archived' && Store::status(Store::find($bons[1]->token)) === 'archived', 'Used vouchers preserve used status while unredeemed ones become archived');
+    $check(Store::counts($id) === ['total' => 2, 'used' => 2, 'available' => 0, 'expired' => 0] && Store::amounts($id) === ['total_cents' => 4000, 'used_cents' => 4000, 'available_cents' => 0, 'expired_cents' => 0], 'Archived batch preserves used volumes and CHF while zeroing available and expired');
+    $check(Store::archived_summary($id) === ['bons' => 23, 'cents' => 46000], 'Archived batch summary reports unredeemed vouchers and CHF');
+    $check(is_wp_error(Store::set_bon_archived((int) $bons[5]->id, false)), 'Cannot unarchive single voucher while parent batch is archived');
+    wp_set_current_user($seller_id);
+    $check(Store::redeem($bons[5]->token)['result'] === 'archived' && Store::find($bons[5]->token)->redeemed_at === null, 'Boutique scanner refuses voucher from archived batch');
+    wp_set_current_user(1);
+    $check(Store::set_lot_archived($id, false) === true && Store::lot($id)->archived_at === null, 'Unarchive entire batch');
+    $check(Store::status(Store::find($bons[5]->token)) === 'available' && Store::status(Store::find($bons[1]->token)) === 'expired', 'Unarchived batch restores real available and expired statuses');
+    $check(Store::counts($id) === ['total' => 25, 'used' => 2, 'available' => 22, 'expired' => 1] && Store::archived_summary($id) === ['bons' => 0, 'cents' => 0], 'Unarchived batch restores exact counts and clears archived summary');
 
     echo "SUCCESS: $passed checks. Fixture lots/users removed below.\n";
 } finally {
