@@ -4,6 +4,10 @@ defined('ABSPATH') || exit;
 
 /** Installable, connected boutique shell. No service worker owns/caches voucher URLs. */
 final class Webapp {
+    public static function is_standalone_request(): bool {
+        return isset($_GET['cooms_scan']) || isset($_GET['cooms_bon']) || isset($_GET['cooms_manifest']);
+    }
+
     public static function manifest_url(): string {
         return add_query_arg('cooms_manifest', '1', home_url('/'));
     }
