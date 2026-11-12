@@ -21,6 +21,14 @@ try {
     $manifest = Webapp::manifest();
     $check($manifest['display'] === 'standalone' && $manifest['start_url'] === Scanner::url(), 'Webapp opens the scanner in standalone mode');
     $check($manifest['scope'] === home_url('/') && $manifest['id'] === Scanner::url(), 'Webapp identity and scope use the actual WordPress home');
+    $plugin_instance = new \Cooms\Bons\Plugin();
+    $check($plugin_instance->filter_external_translation(true) === true, 'Normal site URLs keep external translation enabled');
+    $_GET['cooms_scan'] = '1';
+    $check(Webapp::is_standalone_request() && $plugin_instance->filter_external_translation(true) === false, 'Scanner standalone route disables Weglot output buffer and language switcher');
+    unset($_GET['cooms_scan']);
+    $_GET['cooms_bon'] = 'token';
+    $check(Webapp::is_standalone_request() && $plugin_instance->filter_external_translation(true) === false, 'Voucher standalone route disables Weglot output buffer and language switcher');
+    unset($_GET['cooms_bon']);
     $check(count($manifest['icons']) === 3 && $manifest['icons'][2]['purpose'] === 'maskable', 'Webapp has regular and maskable icons');
     foreach (['icon-192.png' => 192, 'icon-512.png' => 512, 'icon-maskable-512.png' => 512, 'apple-touch-icon.png' => 180] as $file => $size) {
         $image = getimagesize(dirname(COOMS_BONS_FILE) . '/assets/app/' . $file);

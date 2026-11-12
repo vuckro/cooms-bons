@@ -6,6 +6,9 @@ final class Plugin {
     public function boot(): void {
         add_filter('plugin_row_meta', [$this, 'metadata'], 10, 2);
         add_filter('woocommerce_prevent_admin_access', [$this, 'allow_seller_pages']);
+        foreach (['weglot_active_translation_before_process', 'weglot_active_translation_before_treat_page', 'weglot_active_translation'] as $hook) {
+            add_filter($hook, [$this, 'filter_external_translation']);
+        }
         add_action('admin_menu', [$this, 'menu']);
         add_action('admin_enqueue_scripts', [$this, 'assets']);
         add_action('admin_post_cooms_create', [$this, 'create']);
@@ -30,6 +33,11 @@ final class Plugin {
             return false;
         }
         return $prevent;
+    }
+
+    /** Standalone boutique/voucher routes render without wp_head/wp_footer and must never be buffered or injected by translation switchers. */
+    public function filter_external_translation($active): bool {
+        return Webapp::is_standalone_request() ? false : (bool) $active;
     }
 
     public function menu(): void {

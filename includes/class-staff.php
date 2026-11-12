@@ -23,6 +23,7 @@ final class Staff {
         add_action('admin_post_cooms_staff', [$this, 'submit']);
         add_filter('login_redirect', [$this, 'login_redirect'], 10, 3);
         add_filter('show_admin_bar', [$this, 'filter_admin_bar']);
+        add_filter('display_admin_bar_menu_weglot', [$this, 'filter_admin_bar']);
         add_filter('wp_is_application_passwords_available_for_user', [$this, 'filter_app_passwords'], 10, 2);
     }
 
@@ -93,7 +94,7 @@ final class Staff {
 
     public function clean_admin_bar(\WP_Admin_Bar $bar): void {
         if (!self::is_restricted_seller()) { return; }
-        foreach (['wp-logo', 'about', 'wporg', 'documentation', 'support-forums', 'feedback', 'site-name', 'view-site', 'updates', 'comments', 'new-content', 'edit-profile'] as $id) {
+        foreach (['wp-logo', 'about', 'wporg', 'documentation', 'support-forums', 'feedback', 'site-name', 'view-site', 'updates', 'comments', 'new-content', 'edit-profile', 'weglot'] as $id) {
             $bar->remove_node($id);
         }
         foreach (['my-account', 'user-info'] as $id) {
@@ -115,8 +116,8 @@ final class Staff {
         remove_all_actions('all_admin_notices');
     }
 
-    public function filter_admin_bar(bool $show): bool {
-        return self::is_restricted_seller() ? false : $show;
+    public function filter_admin_bar($show): bool {
+        return self::is_restricted_seller() ? false : (bool) $show;
     }
 
     public function filter_app_passwords(bool $available, \WP_User $user): bool {

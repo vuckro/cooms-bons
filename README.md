@@ -1,6 +1,6 @@
 # COOMS Bons
 
-Plugin WordPress de bons anonymes à usage unique : lots pour la Fondation, QR codes individuels, retrait physique en boutique et réconciliation CSV. Version 1.7.0.
+Plugin WordPress de bons anonymes à usage unique : lots pour la Fondation, QR codes individuels, retrait physique en boutique et réconciliation CSV. Version 1.7.1.
 
 ## Prérequis
 
