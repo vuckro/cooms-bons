@@ -250,5 +250,13 @@ async (page, fixture) => {
     )),
     "Table overflow remains local on mobile",
   );
+  await page.goto(base + "/wp-admin/admin.php?page=cooms-bons-staff");
+  await capture("cooms11-staff-mobile");
+  assert(
+    !(await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    )),
+    "No employee management page overflow at 390px",
+  );
   return { passed: checks.length, checks };
 };

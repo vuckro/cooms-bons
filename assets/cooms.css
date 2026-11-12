@@ -779,7 +779,7 @@ body.cb-scan {
   gap: 12px;
 }
 .cb-app .cb-filters select,
-.cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]) {
+.cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"], [type="password"]) {
   min-height: 42px;
   border-radius: 8px;
 }
@@ -1212,7 +1212,8 @@ body.cb-scan {
   }
 }
 /* Keep COOMS controls consistent even when a host admin skin restyles inputs. */
-.cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]),
+.cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"], [type="password"]),
+.cb-app .cb-staff-pass-row input[type="password"],
 .cb-app .cb-work .cb-filters select {
   min-height: 42px;
   padding: 8px 12px;
@@ -1226,6 +1227,7 @@ body.cb-scan {
   padding-inline-end: 32px;
 }
 .cb-app .cb-field input:focus-visible,
+.cb-app .cb-staff-pass-row input[type="password"]:focus-visible,
 .cb-app .cb-work .cb-filters select:focus-visible {
   outline: 2px solid var(--cb-accent);
   outline-offset: 2px;
@@ -1235,7 +1237,8 @@ body.cb-scan {
   align-items: center;
 }
 @media (max-width: 600px) {
-  .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]),
+  .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"], [type="password"]),
+  .cb-app .cb-staff-pass-row input[type="password"],
   .cb-app .cb-work .cb-filters select {
     min-height: 44px;
     font-size: 16px;
@@ -1269,7 +1272,7 @@ body.cb-scan {
 
 /* Native-account management, sharing the same components as lot creation. */
 .cb-staff-create { margin-block-start: 32px; }
-.cb-app .cb-field input[type="email"] { width: 100%; }
+.cb-app .cb-field input:is([type="email"], [type="password"]) { width: 100%; }
 .cb-app .cb-check { display: flex; align-items: flex-start; gap: 10px; font-weight: 450; }
 .cb-check input { flex-shrink: 0; margin-block-start: 4px; }
 .cb-staff-profile { align-self: center; font-size: 13px; }
@@ -1277,6 +1280,87 @@ body.cb-scan {
 .cb-staff-table th:first-child { min-width: 220px; }
 .cb-staff-table td:last-child { min-width: 280px; }
 #cb-scanner-link { margin-block-end: 12px; }
+
+/* 1.7 — separated gift/value tracking, custom pickup text, and confined staff passwords. */
+.cb-field-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  gap: 16px;
+  margin: 24px 0;
+  align-items: start;
+}
+.cb-field-pair .cb-field {
+  margin: 0;
+}
+.cb-field-pair .cb-field input[type="number"] {
+  width: 100%;
+}
+.cb-count-amount {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--cb-muted);
+  font-variant-numeric: tabular-nums;
+}
+.cb-preview .cb-preview-total {
+  color: var(--cb-ink);
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+}
+.cb-lot-edits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+}
+.cb-lot-edits details[open] {
+  flex-basis: 100%;
+}
+.cb-lot-edits .cb-notes-form .cb-field {
+  margin: 0 0 14px;
+}
+.cb-staff-pass {
+  margin-top: 8px;
+}
+.cb-staff-pass summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  cursor: pointer;
+  color: var(--cb-link);
+  font-size: 13px;
+  font-weight: 500;
+}
+.cb-staff-pass-form {
+  margin-top: 8px;
+}
+.cb-staff-pass-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.cb-staff-pass-row input[type="password"] {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+@media (max-width: 600px) {
+  .cb-field-pair {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .cb-staff-pass summary {
+    min-height: 44px;
+  }
+  .cb-staff-pass-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cb-staff-pass-row .cb-button {
+    width: 100%;
+  }
+}
 
 @media (max-width: 600px) {
   .cb-staff-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }

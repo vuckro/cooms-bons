@@ -278,3 +278,9 @@ Bon PNG : 1000 × 1320, bande crème avec vrai logo, cadeau personnalisé, QR no
 Champ multiligne facultatif sous le nom du lot, limite de 2 000 caractères, aide explicite sur sa confidentialité. Une fiche de lot affiche la description et un formulaire de modification dépliable. Le champ suit les surfaces, textes, bordures, rayons et focus AdminKit, avec saisie mobile à 16 px minimum. La description ne fait pas partie des données publiques du bon ni des exports.
 
 Les commandes caméra sont empilées en pleine largeur, y compris pendant la demande de permission : ouvrir puis annuler. Aucun partage horizontal de largeur sur iPhone.
+
+## Montants CHF, texte de retrait et cloisonnement boutique — 1.7
+
+Le formulaire de création associe sur une rangée deux champs complémentaires (`Nom du cadeau` et `Valeur unitaire (CHF)` en chiffres tabulaires), repliés sur une colonne à 600 px et moins, suivis du `Texte de retrait`. L’aperçu latéral met à jour en direct le libellé complet, la mention de retrait, la validité et la valeur totale du lot. Sur un lot existant, le texte de retrait et la description interne utilisent deux divulgations natives côte à côte, sans carte imbriquée.
+
+Les quatre compteurs de synthèse affichent sous chaque volume le montant correspondant en CHF (`tabular-nums`), et la table des lots expose une colonne `Montant retiré` accompagnée du reste à retirer. Dans `Accès employés`, chaque ligne indique le périmètre effectif du compte et propose une divulgation sobre pour enregistrer directement le mot de passe d’un appareil boutique, en conservant les tokens et densités AdminKit.

@@ -5,7 +5,10 @@ defined('ABSPATH') || exit;
 final class Store {
     public const MANAGE = 'cooms_manage_bons';
     public const REDEEM = 'cooms_redeem_bons';
-    public const TITLE = 'Boîte de 4 cookies — 20 CHF';
+    public const TITLE = 'Boîte de 4 cookies';
+    public const DEFAULT_CENTS = 2000;
+    public const DEFAULT_PICKUP = 'Retrait en boutique COOMS';
+    public const MAX_VALUE_CENTS = 10000000;
     public const MAX_BATCH = 250;
 
     public static function table(string $name): string {
@@ -24,6 +27,8 @@ final class Store {
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             name varchar(160) NOT NULL,
             title varchar(190) NOT NULL,
+            value_cents int unsigned NOT NULL DEFAULT 0,
+            pickup_text varchar(160) NOT NULL DEFAULT 'Retrait en boutique COOMS',
             description text DEFAULT NULL,
             quantity int unsigned NOT NULL,
             request_key varchar(64) NOT NULL,
@@ -61,8 +66,100 @@ final class Store {
             $admin->add_cap(self::MANAGE);
             $admin->add_cap(self::REDEEM);
         }
-        if ($wpdb->get_var("SHOW COLUMNS FROM $lots LIKE 'description'") !== 'description') { return; }
-        update_option('cooms_bons_schema', '2', false);
+        foreach (['description', 'value_cents', 'pickup_text'] as $column) {
+            if ($wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM $lots LIKE %s", $column)) !== $column) { return; }
+        }
+        if (get_option('cooms_bons_schema') !== '3') {
+            self::migrate_legacy_lots();
+        }
+        update_option('cooms_bons_schema', '3', false);
+    }
+
+    /** Split historical "Gift — XX CHF" titles into gift name + centime value without losing printed labels. */
+    public static function migrate_legacy_lots(): void {
+        global $wpdb;
+        $lots = self::table('lots');
+        $wpdb->query($wpdb->prepare("UPDATE $lots SET pickup_text = %s WHERE pickup_text = ''", self::DEFAULT_PICKUP));
+        $rows = $wpdb->get_results("SELECT id, title, value_cents FROM $lots WHERE value_cents = 0");
+        foreach ($rows as $row) {
+            [$clean_title, $cents] = self::extract_legacy_gift((string) $row->title);
+            if ($cents !== null && $clean_title !== '') {
+                $wpdb->update($lots, ['title' => $clean_title, 'value_cents' => $cents], ['id' => (int) $row->id], ['%s', '%d'], ['%d']);
+            }
+        }
+    }
+
+    /** @return array{0: string, 1: ?int} */
+    private static function extract_legacy_gift(string $title): array {
+        if (preg_match('/^(.+?)\s*[—–-]\s*(\d{1,6}(?:[.,]\d{1,2})?)\s*CHF\s*$/iu', trim($title), $match)) {
+            $parsed = self::parse_value($match[2]);
+            if (!is_wp_error($parsed)) {
+                return [trim($match[1]), $parsed];
+            }
+        }
+        return [$title, null];
+    }
+
+    /** @param string|int|float $raw @return int|\WP_Error */
+    public static function parse_value($raw) {
+        $text = str_replace(["\xC2\xA0", "\xE2\x80\xAF", ' ', "'"], '', trim((string) $raw));
+        $text = str_replace(',', '.', $text);
+        if ($text === '' || !preg_match('/^\d{1,6}(?:\.(\d{1,2}))?$/D', $text, $match)) {
+            return new \WP_Error('invalid_value', 'Indiquez une valeur unitaire en CHF entre 0 et 100 000 (ex. 20 ou 24.50).');
+        }
+        $parts = explode('.', $text, 2);
+        $cents = ((int) $parts[0]) * 100 + (isset($parts[1]) ? (int) str_pad($parts[1], 2, '0') : 0);
+        if ($cents < 0 || $cents > self::MAX_VALUE_CENTS) {
+            return new \WP_Error('invalid_value', 'Indiquez une valeur unitaire en CHF entre 0 et 100 000 (ex. 20 ou 24.50).');
+        }
+        return $cents;
+    }
+
+    public static function format_chf(int $cents): string {
+        $cents = max(0, $cents);
+        return ($cents % 100 === 0 ? number_format_i18n(intdiv($cents, 100), 0) : number_format_i18n($cents / 100, 2)) . ' CHF';
+    }
+
+    public static function csv_chf(int $cents): string {
+        $cents = max(0, $cents);
+        return $cents % 100 === 0 ? (string) intdiv($cents, 100) : sprintf('%d.%02d', intdiv($cents, 100), $cents % 100);
+    }
+
+    public static function input_chf(int $cents): string {
+        return self::csv_chf($cents);
+    }
+
+    public static function gift_label(object $item): string {
+        $title = trim((string) ($item->title ?? ''));
+        $cents = (int) ($item->value_cents ?? 0);
+        if ($cents <= 0 || preg_match('/\bCHF\b/iu', $title)) { return $title; }
+        return $title . ' — ' . self::format_chf($cents);
+    }
+
+    /** @return string|\WP_Error */
+    public static function pickup_text(string $value) {
+        $value = sanitize_text_field($value);
+        if ($value === '' || mb_strlen($value) > 160) {
+            return new \WP_Error('invalid_pickup', 'Indiquez un texte de retrait de 1 à 160 caractères (ex. Retrait en boutique Cornavin ou Terrassière).');
+        }
+        return $value;
+    }
+
+    public static function pickup_line(object $item): string {
+        $pickup = trim((string) ($item->pickup_text ?? ''));
+        if ($pickup === '') { $pickup = self::DEFAULT_PICKUP; }
+        if (preg_match('/^(?:usage unique|un seul retrait)\b/iu', $pickup)) { return $pickup; }
+        return 'Usage unique · ' . $pickup;
+    }
+
+    public static function update_pickup(int $id, string $value) {
+        if (!current_user_can(self::MANAGE)) { return new \WP_Error('forbidden', 'Accès réservé au responsable.'); }
+        $value = self::pickup_text($value);
+        if (is_wp_error($value)) { return $value; }
+        if (!self::lot($id)) { return new \WP_Error('missing', 'Lot introuvable.'); }
+        global $wpdb;
+        return $wpdb->update(self::table('lots'), ['pickup_text' => $value], ['id' => $id]) === false
+            ? new \WP_Error('storage', 'Le texte de retrait n’a pas pu être enregistré. Réessayez.') : true;
     }
 
     /** Six calendar months, clamped to the last day of the destination month. */
@@ -105,14 +202,37 @@ final class Store {
     }
 
     /** @return int|\WP_Error */
-    public static function create_lot(string $name, int $quantity, string $key, string $gift = self::TITLE, ?string $valid_until = null, string $description = '') {
+    public static function create_lot(
+        string $name,
+        int $quantity,
+        string $key,
+        string $gift = self::TITLE,
+        ?string $valid_until = null,
+        string $description = '',
+        ?int $value_cents = null,
+        string $pickup_text = self::DEFAULT_PICKUP
+    ) {
         global $wpdb;
         $name = sanitize_text_field($name);
         if ($name === '' || mb_strlen($name) > 160 || $quantity < 1 || $quantity > self::MAX_BATCH || !preg_match('/^[a-f0-9]{64}$/D', $key)) {
             return new \WP_Error('invalid_lot', 'Indiquez un nom (160 caractères maximum) et une quantité de 1 à ' . self::MAX_BATCH . '.');
         }
         $gift = sanitize_text_field($gift);
-        if ($gift === '' || mb_strlen($gift) > 190) { return new \WP_Error('invalid_gift', 'Indiquez un cadeau de 1 à 190 caractères.'); }
+        if ($value_cents === null) {
+            [$clean_gift, $extracted] = self::extract_legacy_gift($gift);
+            if ($extracted !== null && $clean_gift !== '') {
+                $gift = $clean_gift;
+                $value_cents = $extracted;
+            } else {
+                $value_cents = self::DEFAULT_CENTS;
+            }
+        }
+        if ($gift === '' || mb_strlen($gift) > 190) { return new \WP_Error('invalid_gift', 'Indiquez un nom de cadeau de 1 à 190 caractères.'); }
+        if ($value_cents < 0 || $value_cents > self::MAX_VALUE_CENTS) {
+            return new \WP_Error('invalid_value', 'Indiquez une valeur unitaire en CHF entre 0 et 100 000.');
+        }
+        $pickup_text = self::pickup_text($pickup_text);
+        if (is_wp_error($pickup_text)) { return $pickup_text; }
         $description = self::description($description);
         if (is_wp_error($description)) { return $description; }
         $expires = $valid_until === null ? self::expiry(new \DateTimeImmutable('now', new \DateTimeZone('UTC'))) : self::selected_expiry($valid_until);
@@ -123,8 +243,18 @@ final class Store {
         $now = self::now();
         $wpdb->query('START TRANSACTION');
         try {
-            $created = $wpdb->insert($lots, ['name' => $name, 'title' => $gift, 'description' => $description, 'quantity' => $quantity,
-                'request_key' => $key, 'created_at' => $now, 'expires_at' => $expires, 'created_by' => get_current_user_id()]);
+            $created = $wpdb->insert($lots, [
+                'name' => $name,
+                'title' => $gift,
+                'value_cents' => $value_cents,
+                'pickup_text' => $pickup_text,
+                'description' => $description,
+                'quantity' => $quantity,
+                'request_key' => $key,
+                'created_at' => $now,
+                'expires_at' => $expires,
+                'created_by' => get_current_user_id(),
+            ]);
             if (!$created) {
                 $wpdb->query('ROLLBACK');
                 // A concurrent submission may have committed this same request.
@@ -152,7 +282,7 @@ final class Store {
         global $wpdb;
         if (!preg_match('/^[a-f0-9]{64}$/D', $token)) { return null; }
         $bons = self::table('bons'); $lots = self::table('lots');
-        return $wpdb->get_row($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title FROM $bons b INNER JOIN $lots l ON l.id=b.lot_id WHERE b.token=%s", $token));
+        return $wpdb->get_row($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title, l.value_cents, l.pickup_text FROM $bons b INNER JOIN $lots l ON l.id=b.lot_id WHERE b.token=%s", $token));
     }
 
     public static function find_code(string $code): ?object {
@@ -221,7 +351,7 @@ final class Store {
         [$where, $args] = self::where($lot, $status, $at);
         $b = self::table('bons'); $l = self::table('lots');
         $args[] = max(1, $limit); $args[] = max(0, $offset);
-        return $wpdb->get_results($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title, u.display_name AS redeemer_name FROM $b b INNER JOIN $l l ON b.lot_id=l.id LEFT JOIN {$wpdb->users} u ON u.ID=b.redeemed_by WHERE $where ORDER BY b.id DESC LIMIT %d OFFSET %d", $args));
+        return $wpdb->get_results($wpdb->prepare("SELECT b.*, l.name AS lot_name, l.title, l.value_cents, l.pickup_text, u.display_name AS redeemer_name FROM $b b INNER JOIN $l l ON b.lot_id=l.id LEFT JOIN {$wpdb->users} u ON u.ID=b.redeemed_by WHERE $where ORDER BY b.id DESC LIMIT %d OFFSET %d", $args));
     }
 
     /** Attribution is private to management; deleted accounts retain their audit ID. */
@@ -236,6 +366,20 @@ final class Store {
         [$where, $args] = self::where($lot, '');
         $now = self::now();
         $sql = 'SELECT COUNT(*) AS total, COALESCE(SUM(redeemed_at IS NOT NULL),0) AS used, COALESCE(SUM(redeemed_at IS NULL AND expires_at > %s),0) AS available, COALESCE(SUM(redeemed_at IS NULL AND expires_at <= %s),0) AS expired FROM ' . self::table('bons') . " b WHERE $where";
+        return array_map('intval', (array) $wpdb->get_row($wpdb->prepare($sql, array_merge([$now, $now], $args)), ARRAY_A));
+    }
+
+    /** Exact centime totals across one lot or all lots, even when unit values differ. */
+    public static function amounts(int $lot = 0): array {
+        global $wpdb;
+        [$where, $args] = self::where($lot, '');
+        $now = self::now();
+        $b = self::table('bons'); $l = self::table('lots');
+        $sql = "SELECT COALESCE(SUM(l.value_cents),0) AS total_cents,
+            COALESCE(SUM(CASE WHEN b.redeemed_at IS NOT NULL THEN l.value_cents ELSE 0 END),0) AS used_cents,
+            COALESCE(SUM(CASE WHEN b.redeemed_at IS NULL AND b.expires_at > %s THEN l.value_cents ELSE 0 END),0) AS available_cents,
+            COALESCE(SUM(CASE WHEN b.redeemed_at IS NULL AND b.expires_at <= %s THEN l.value_cents ELSE 0 END),0) AS expired_cents
+            FROM $b b INNER JOIN $l l ON l.id=b.lot_id WHERE $where";
         return array_map('intval', (array) $wpdb->get_row($wpdb->prepare($sql, array_merge([$now, $now], $args)), ARRAY_A));
     }
 

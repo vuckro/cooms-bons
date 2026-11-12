@@ -1,6 +1,6 @@
 # COOMS Bons
 
-Plugin WordPress de bons anonymes à usage unique : lots pour la Fondation, QR codes individuels, retrait physique en boutique et réconciliation CSV. Version 1.2.0.
+Plugin WordPress de bons anonymes à usage unique : lots pour la Fondation, QR codes individuels, retrait physique en boutique et réconciliation CSV. Version 1.7.0.
 
 ## Prérequis
 
@@ -126,3 +126,9 @@ Les listes de bons affichent « Validé par ». Le CSV conserve ses sept premiè
 ### Descriptions internes (1.6)
 
 Chaque lot peut recevoir une description facultative de 2 000 caractères, saisie à la création et modifiable dans sa fiche par un responsable. Les retours à la ligne sont conservés et les balises HTML retirées. La description est exclue des bons PNG, des écrans de scan et du CSV. La mise à jour ajoute une colonne nullable aux lots (schéma 2), sans modifier les tokens, dates ou retraits existants.
+
+### Texte de retrait modifiable, montants en CHF et cloisonnement boutique (1.7)
+
+- **Cadeau et valeur séparés** : chaque lot distingue le nom du cadeau (`title`) et sa valeur unitaire en centimes (`value_cents`, ex. `Boîte de 4 cookies` et `20 CHF`). Les lots historiques de forme `Cadeau — 20 CHF` sont migrés automatiquement (schéma 3). Les compteurs affichent les montants émis, disponibles à retirer, retirés et expirés par lot et au total, même entre lots de montants différents. Le CSV ajoute `Valeur unitaire (CHF)`, `Montant retiré (CHF)` et `Texte de retrait` après les huit colonnes existantes.
+- **Texte de retrait par lot** : modifiable à la création et sur un lot existant (`Retrait en boutique COOMS` par défaut, ex. `Retrait en boutique Cornavin` ou `Terrassière`), répercuté sur l’aperçu, les bons PNG, l’écran de retrait et le CSV.
+- **Accès employés cloisonnés** : les comptes `Vendeur COOMS` sont bloqués hors des écrans autorisés (scanner, guide boutique et réservations FluentBooking si accordées), sans accès au tableau de bord, profil, comptes, outils ou réglages WordPress. Le responsable peut définir ou remplacer directement le mot de passe d’un téléphone boutique depuis `COOMS Bons → Accès employés`.
