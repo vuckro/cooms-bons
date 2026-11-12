@@ -47,8 +47,10 @@ archive=zipfile.ZipFile(io.BytesIO(data));check(len(archive.namelist())==25 and 
 (root/'output/exported-bon.png').write_bytes(archive.read(archive.namelist()[0]))
 code,data2,_=request(zip_url);archive2=zipfile.ZipFile(io.BytesIO(data2));check({x:archive.read(x) for x in archive.namelist()}=={x:archive2.read(x) for x in archive2.namelist()},'Repeated export gives identical images')
 code,data,_=request(csv_url);rows=list(csv.reader(io.StringIO(data.decode('utf-8-sig')),delimiter=';'))
-check(code==200 and len(rows)==26 and len(rows[0])==8,'CSV has 25 bons and expected columns')
+check(code==200 and len(rows)==26 and len(rows[0])==11,'CSV has 25 bons and expected 11 columns')
+check(rows[0][8:]==['Valeur unitaire (CHF)','Montant retiré (CHF)','Texte de retrait'],'CSV appends unit value, withdrawn amount and pickup text columns')
 check(sum(row[4]=='Utilisé' for row in rows[1:])==1,'CSV withdrawal count matches actual redemption')
+check(all((row[8]=='20' and row[9]==('20' if row[4]=='Utilisé' else '0')) for row in rows[1:]),'CSV tracks unit CHF and withdrawn CHF per voucher')
 check(rows[0][7]=='Validé par' and all(row[7]=='Responsable · Recette' for row in rows[1:] if row[4]=='Utilisé'),'CSV attributes withdrawal to the authenticated employee')
 check(all(b['token'].encode() not in data for b in fixture['bons']),'CSV contains no secret tokens')
 check(request(zip_url,auth=False)[0]!=200,'Anonymous export refused')
@@ -90,11 +92,20 @@ check(request(scan,urllib.parse.urlencode({'code':fixture['bons'][5]['code'],'_w
 cookie='; '.join(c['name']+'='+c['value'] for c in fixture['accounts']['subscriber']['cookies'])
 check(request(scan)[0]==403,'Subscriber cannot open scanner')
 cookie='; '.join(c['name']+'='+c['value'] for c in fixture['accounts']['seller']['cookies'])
-code,body,_=request(scan);nonce=re.search(r'name="_wpnonce" value="([^"]+)"',body.decode()).group(1)
+code,body,_=request(scan);s_scan=body.decode();nonce=re.search(r'name="_wpnonce" value="([^"]+)"',s_scan).group(1)
+check('Administration COOMS Bons' not in s_scan and 'Guide boutique' in s_scan,'Seller scanner footer hides admin link and offers boutique guide')
 code,body,_=request(scan,urllib.parse.urlencode({'code':fixture['bons'][6]['code'],'_wpnonce':nonce}).encode())
 check(code==200 and '<h1>Bon valide</h1>' in body.decode(),'Seller can resolve manual reference')
 code,body,_=request(base+'/wp-admin/admin.php?page=cooms-bons-scan')
 check(code==200 and 'Ouvrir la caméra' in body.decode(),'WordPress Scanner menu reaches boutique page')
+code,body,_=request(base+'/wp-admin/admin.php?page=cooms-bons-help')
+check(code==200 and 'Remettre un cadeau en boutique' in body.decode(),'Seller can open boutique help page')
+for redirected in ('/wp-admin/','/wp-admin/index.php','/wp-admin/profile.php'):
+ code,body,_=request(base+redirected);b_text=body.decode()
+ check(code==200 and 'Scanner un bon' in b_text and 'Ouvrir la caméra' in b_text,'Seller redirected from WP admin screen to scanner: '+redirected)
+for forbidden in ('/wp-admin/users.php','/wp-admin/tools.php','/wp-admin/options-general.php'):
+ code,body,_=request(base+forbidden);b_text=body.decode()
+ check(code==403 or ('Scanner un bon' in b_text and 'Ouvrir la caméra' in b_text),'Seller blocked from privileged WP admin screen: '+forbidden)
 cookie=admin_cookie
 code,body,_=request(base+'/wp-admin/admin.php?page=cooms-bons')
 check(code==200 and 'Vos lots' in body.decode() and fixture['bons'][0]['lot_name'] in body.decode(),'Default management view lists distributions')
@@ -104,20 +115,29 @@ nonce=re.search(r'name="_wpnonce" value="([^"]+)"',s).group(1)
 key=re.search(r'name="request_key" value="([^"]+)"',s).group(1)
 from datetime import date,timedelta
 selected=(date.today()+timedelta(days=60)).isoformat()
-custom_gift='Coffret de 8 cookies — 40 CHF'
+custom_gift='Coffret de 8 cookies'
+custom_value='40'
+custom_pickup='Retrait en boutique Cornavin'
+edited_pickup='Retrait aux boutiques Cornavin et Terrassière'
 internal_note='NOTE INTERNE — distribution équipe 🍪'
-payload={'action':'cooms_create','_wpnonce':nonce,'request_key':key,'name':'RECETTE HTTP personnalisée','quantity':'2','gift':custom_gift,'valid_until':'2020-01-01','description':internal_note}
+payload={'action':'cooms_create','_wpnonce':nonce,'request_key':key,'name':'RECETTE HTTP personnalisée','quantity':'2','gift':custom_gift,'gift_value':custom_value,'pickup_text':custom_pickup,'valid_until':'2020-01-01','description':internal_note}
 _,body,_=request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(payload).encode());s=body.decode()
-check('Choisissez une date de fin de validité' in s and custom_gift in s and key in s,'Invalid date preserves entered gift, name and idempotency key')
+check('Choisissez une date de fin de validité' in s and custom_gift in s and 'value="40"' in s and custom_pickup in s and key in s,'Invalid date preserves entered gift, value, pickup, name and idempotency key')
 check(internal_note in s,'Validation error preserves the private description')
 payload['valid_until']=selected
 _,body,_=request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(payload).encode());s=body.decode()
 lot_id=int(re.search(r'name="lot"[^>]*>.*?<option value="(\d+)"\s+selected',s,re.S).group(1))
 fixture.setdefault('extra_lots',[]).append({'id':lot_id,'request_key':key})
 (root/'output/http-fixture.json').write_text(json.dumps(fixture))
-check(custom_gift in s and date.fromisoformat(selected).strftime('%d/%m/%Y') in s,'Custom gift and inclusive validity visible on created lot')
+check('Coffret de 8 cookies — 40 CHF' in s and custom_pickup in s and '80 CHF' in s and date.fromisoformat(selected).strftime('%d/%m/%Y') in s,'Custom gift, value, pickup and inclusive validity visible on created lot')
 check(internal_note in s,'Created lot displays its internal description to management')
-description_form=re.search(r'<form[^>]*class="cb-notes-form".*?</form>',s,re.S).group(0)
+pickup_form=next(f for f in re.findall(r'<form[^>]*class="cb-notes-form".*?</form>',s,re.S) if 'cooms_pickup' in f)
+pickup_nonce=re.search(r'name="_wpnonce" value="([^"]+)"',pickup_form).group(1)
+pickup_payload={'action':'cooms_pickup','lot':str(lot_id),'_wpnonce':pickup_nonce,'pickup_text':edited_pickup}
+_,pickup_body,_=request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(pickup_payload).encode())
+check('Texte de retrait mis à jour' in pickup_body.decode() and edited_pickup in pickup_body.decode(),'Responsible edits pickup text on existing lot')
+check(request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(dict(pickup_payload,_wpnonce='invalid')).encode())[0]==403,'Pickup text update rejects invalid nonce')
+description_form=next(f for f in re.findall(r'<form[^>]*class="cb-notes-form".*?</form>',s,re.S) if 'cooms_description' in f)
 description_nonce=re.search(r'name="_wpnonce" value="([^"]+)"',description_form).group(1)
 note_payload={'action':'cooms_description','lot':str(lot_id),'_wpnonce':description_nonce,'description':internal_note+' — modifiée'}
 _,note_body,_=request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(note_payload).encode())
@@ -126,16 +146,19 @@ bad_note=dict(note_payload,_wpnonce='invalid')
 check(request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(bad_note).encode())[0]==403,'Internal description update rejects invalid nonce')
 cookie='; '.join(c['name']+'='+c['value'] for c in fixture['accounts']['seller']['cookies'])
 check(request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(note_payload).encode())[0]==403,'Seller cannot update internal description')
+check(request(base+'/wp-admin/admin-post.php',urllib.parse.urlencode(pickup_payload).encode())[0]==403,'Seller cannot update pickup text')
 cookie=admin_cookie
+_,overview_body,_=request(base+'/wp-admin/admin.php?page=cooms-bons')
+check('Montant retiré' in overview_body.decode() and '580 CHF' in overview_body.decode(),'Global overview aggregates CHF totals across mixed-value lots')
 links=[html.unescape(x) for x in re.findall(r'href="([^"]+)"',s)]
 custom_csv=next(x for x in links if 'format=csv' in x)
 _,data,_=request(custom_csv);custom_rows=list(csv.reader(io.StringIO(data.decode('utf-8-sig')),delimiter=';'))
 check(internal_note.encode() not in data,'Private description excluded from CSV')
-check(len(custom_rows)==3 and all(row[6]==custom_gift and row[3]==date.fromisoformat(selected).strftime('%d/%m/%Y') for row in custom_rows[1:]),'Custom gift/date exported on both CSV rows')
+check(len(custom_rows)==3 and all(row[6]==custom_gift and row[8]=='40' and row[9]=='0' and row[10]==edited_pickup and row[3]==date.fromisoformat(selected).strftime('%d/%m/%Y') for row in custom_rows[1:]),'Custom gift, unit CHF and updated pickup text exported on both CSV rows')
 _,body,_=request(scan);lookup_nonce=re.search(r'name="_wpnonce" value="([^"]+)"',body.decode()).group(1)
-_,body,_=request(scan,urllib.parse.urlencode({'code':custom_rows[1][0],'_wpnonce':lookup_nonce}).encode())
-check(custom_gift in body.decode() and 'Valider la remise du cadeau' in body.decode() and 'Une boîte de 4 cookies' not in body.decode(),'Seller lookup displays custom gift without hardcoded box copy')
-check(internal_note not in body.decode(),'Private description excluded from the voucher screen')
+_,body,_=request(scan,urllib.parse.urlencode({'code':custom_rows[1][0],'_wpnonce':lookup_nonce}).encode());lookup_html=body.decode()
+check('Coffret de 8 cookies — 40 CHF' in lookup_html and 'Usage unique · '+edited_pickup in lookup_html and 'Valider la remise du cadeau' in lookup_html and 'Une boîte de 4 cookies' not in lookup_html,'Seller lookup displays formatted gift + CHF and custom pickup text')
+check(internal_note not in lookup_html,'Private description excluded from the voucher screen')
 # Native employee-account management: never send test invitations.
 cookie=admin_cookie
 staff_page=base+'/wp-admin/admin.php?page=cooms-bons-staff'
@@ -169,6 +192,18 @@ code,body,_=staff_post('suspend',staff_id=staff_id)
 check(code==200 and 'Accès au scanner suspendu' in body.decode(),'Employee suspension succeeds through real POST')
 code,body,_=staff_post('enable',staff_id=staff_id)
 check(code==200 and 'Accès réactivé' in body.decode(),'Employee reactivation succeeds through real POST')
+ephemeral_secret=secrets.token_urlsafe(16)
+code,body,_=staff_post('password',staff_id=staff_id,new_password='short')
+check(code==200 and '8 à 128 caractères' in body.decode(),'Short boutique password rejected via HTTP endpoint')
+code,body,_=staff_post('password',staff_id=staff_id,new_password=ephemeral_secret)
+check(code==200 and 'Nouveau mot de passe enregistré' in body.decode(),'Boutique password updated directly from employee management')
+import http.cookiejar
+jar=http.cookiejar.CookieJar()
+opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+opener.open(base+'/wp-login.php',timeout=30).read()
+login_res=opener.open(base+'/wp-login.php',urllib.parse.urlencode({'log':staff_email,'pwd':ephemeral_secret,'wp-submit':'Se connecter','testcookie':'1'}).encode(),timeout=30)
+login_html=login_res.read().decode()
+check('?cooms_scan=1' in login_res.geturl() and 'Ouvrir la caméra' in login_html,'Boutique account logs in with set password and lands directly on scanner')
 code,body,_=staff_post('suspend',staff_id=fixture['accounts']['seller']['id'])
 check(code==200 and 'Accès au scanner suspendu' in body.decode(),'Existing dedicated seller may be suspended')
 cookie='; '.join(c['name']+'='+c['value'] for c in fixture['accounts']['seller']['cookies'])

@@ -85,9 +85,10 @@ final class Export {
             imagettftext($image, $size, 0, (int) ((1000 - ($box[2] - $box[0])) / 2), $y, $color, $font, $value);
         };
         $text('Bon cadeau', 24, 218, $red);
+        $gift_label = Store::gift_label($bon);
         $size = 28;
         do {
-            $lines = self::gift_lines($bon->title, $font, $size);
+            $lines = self::gift_lines($gift_label, $font, $size);
             if (count($lines) * ($size + 10) <= 116) { break; }
             $size--;
         } while ($size >= 12);
@@ -96,8 +97,20 @@ final class Export {
         imagecopy($image, $qr, (int) ((1000 - imagesx($qr)) / 2), 370, 0, 0, imagesx($qr), imagesy($qr));
         $text($bon->code, 24, 1010, $ink);
         $text('Valable jusqu’au ' . Store::expiry_label($bon->expires_at) . ' inclus', 21, 1080, $ink);
-        $text('Usage unique · Retrait en boutique COOMS', 19, 1180, $muted);
-        $text('Présentez ce bon au vendeur avant la remise.', 18, 1225, $muted);
+        $pickup_line = Store::pickup_line($bon);
+        $p_size = 19;
+        do {
+            $p_lines = self::gift_lines($pickup_line, $font, $p_size);
+            if (count($p_lines) <= 2) { break; }
+            $p_size--;
+        } while ($p_size >= 10);
+        $p_lines = array_slice($p_lines, 0, 2);
+        $p_y = count($p_lines) === 1 ? 1185 : 1180;
+        foreach ($p_lines as $p_line) {
+            $text($p_line, $p_size, $p_y, $muted);
+            $p_y += $p_size + 10;
+        }
+        $text('Présentez ce bon au vendeur avant la remise.', 18, count($p_lines) === 1 ? 1230 : 1258, $muted);
         ob_start(); imagepng($image); $bytes = ob_get_clean();
         imagedestroy($qr); imagedestroy($image);
         return $bytes;
@@ -123,13 +136,28 @@ final class Export {
         header('X-Content-Type-Options: nosniff');
         $out = fopen('php://output', 'wb');
         fwrite($out, "\xEF\xBB\xBF");
-        fputcsv($out, ['Code', 'Lot', 'Création (Genève)', 'Valable jusqu’au', 'Statut', 'Retrait (Genève)', 'Cadeau', 'Validé par'], ';', '"', '');
+        fputcsv($out, ['Code', 'Lot', 'Création (Genève)', 'Valable jusqu’au', 'Statut', 'Retrait (Genève)', 'Cadeau', 'Validé par', 'Valeur unitaire (CHF)', 'Montant retiré (CHF)', 'Texte de retrait'], ';', '"', '');
         $labels = ['used' => 'Utilisé', 'available' => 'Disponible', 'expired' => 'Expiré'];
         $offset = 0;
         do {
             $rows = Store::bons($lot, $status, 500, $offset, $as_of);
             foreach ($rows as $bon) {
-                $line = [$bon->code, $bon->lot_name, Store::format_date($bon->created_at, true), Store::expiry_label($bon->expires_at), $labels[Store::status($bon, $as_of)], $bon->redeemed_at ? Store::format_date($bon->redeemed_at, true) : '', $bon->title, Store::redeemer_label($bon)];
+                $state = Store::status($bon, $as_of);
+                $cents = (int) ($bon->value_cents ?? 0);
+                $pickup = !empty($bon->pickup_text) ? $bon->pickup_text : Store::DEFAULT_PICKUP;
+                $line = [
+                    $bon->code,
+                    $bon->lot_name,
+                    Store::format_date($bon->created_at, true),
+                    Store::expiry_label($bon->expires_at),
+                    $labels[$state],
+                    $bon->redeemed_at ? Store::format_date($bon->redeemed_at, true) : '',
+                    $bon->title,
+                    Store::redeemer_label($bon),
+                    Store::csv_chf($cents),
+                    Store::csv_chf($state === 'used' ? $cents : 0),
+                    $pickup,
+                ];
                 fputcsv($out, array_map([self::class, 'cell'], $line), ';', '"', '');
             }
             $offset += count($rows);

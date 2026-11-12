@@ -3,7 +3,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 root = Path(__file__).resolve().parents[1]
 assert (root/'vendor/autoload.php').is_file(), 'Run composer install --no-dev first'
-output = root/'dist/cooms-bons-1.6.1.zip'
+output = root/'dist/cooms-bons-1.7.0.zip'
 output.parent.mkdir(exist_ok=True)
 files = [root/name for name in ['cooms-bons.php', 'README.md', 'readme.txt', 'LICENSE', 'composer.json', 'composer.lock']]
 for folder in ['includes', 'templates', 'assets', 'vendor', 'docs']:

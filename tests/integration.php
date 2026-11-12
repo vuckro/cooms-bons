@@ -17,7 +17,7 @@ $intercept_mail = null;
 try {
     wp_set_current_user(1);
     $check(current_user_can(Store::MANAGE), 'Administrator can manage bons');
-    $check(get_option('cooms_bons_schema') === '2', 'Description schema migration installed');
+    $check(get_option('cooms_bons_schema') === '3', 'Schema v3 migration installed');
     $manifest = Webapp::manifest();
     $check($manifest['display'] === 'standalone' && $manifest['start_url'] === Scanner::url(), 'Webapp opens the scanner in standalone mode');
     $check($manifest['scope'] === home_url('/') && $manifest['id'] === Scanner::url(), 'Webapp identity and scope use the actual WordPress home');
@@ -63,8 +63,24 @@ try {
     $redirect = new Staff();
     $check($redirect->login_redirect(admin_url(), '', get_userdata($staff_id)) === Scanner::url(), 'Seller default login goes to scanner');
     $check($redirect->login_redirect(home_url('/?cooms_bon=test'), home_url('/?cooms_bon=test'), get_userdata($staff_id)) === home_url('/?cooms_bon=test'), 'Explicit voucher login destination preserved');
+    $check(Staff::is_restricted_seller(get_userdata($staff_id)) && !Staff::is_restricted_seller(get_userdata(1)), 'Restricted seller detected without flagging administrators');
+    $check($redirect->filter_admin_bar(true) === true && $redirect->filter_app_passwords(true, get_userdata($staff_id)) === false, 'Application passwords disabled for restricted sellers');
+    $check(is_wp_error(Staff::create('Weak Pass', 'weak-' . bin2hex(random_bytes(4)) . '@example.invalid', 'short')), 'Short initial boutique password refused');
+    $direct_email = 'cooms-direct-' . bin2hex(random_bytes(8)) . '@example.invalid';
+    $direct_initial = wp_generate_password(18, false);
+    $direct_id = Staff::create('Boutique Cornavin', $direct_email, $direct_initial);
+    $check(is_int($direct_id), 'Create boutique account with initial password'); $user_ids[] = $direct_id;
+    $check(wp_authenticate($direct_email, $direct_initial) instanceof WP_User, 'Initial boutique password authenticates immediately');
+    $direct_sessions = WP_Session_Tokens::get_instance($direct_id);
+    $direct_token = $direct_sessions->create(time() + 3600);
+    $check(is_wp_error(Staff::set_password($direct_id, '1234567')), 'Short replacement password refused');
+    $check(is_wp_error(Staff::set_password(1, wp_generate_password(18, false))), 'Administrator password protected from staff endpoint');
+    $rotated_pass = wp_generate_password(18, false);
+    $check(Staff::set_password($direct_id, $rotated_pass) === true, 'Boutique password updated from staff management');
+    $check(!$direct_sessions->verify($direct_token) && wp_authenticate($direct_email, $rotated_pass) instanceof WP_User, 'Password update revokes old sessions and activates new password');
     wp_set_current_user($staff_id);
-    $check(!Staff::can_manage() && is_wp_error(Staff::create('No', 'no@example.invalid')) && is_wp_error(Staff::set_access($staff_id, false)), 'Seller cannot grant or change employee access');
+    $check($redirect->filter_admin_bar(true) === false, 'Frontend admin bar hidden for restricted sellers');
+    $check(!Staff::can_manage() && is_wp_error(Staff::create('No', 'no@example.invalid')) && is_wp_error(Staff::set_access($staff_id, false)) && is_wp_error(Staff::set_password($direct_id, wp_generate_password(18, false))), 'Seller cannot grant or change employee access or passwords');
     wp_set_current_user(0);
     $check(is_wp_error(Staff::create('No', 'no@example.invalid')), 'Anonymous account creation refused');
     wp_set_current_user(1);
@@ -95,7 +111,21 @@ try {
     $check(Store::update_description($custom, 'Suivi interne') === true && Store::lot($custom)->description === 'Suivi interne', 'Responsible can edit an existing lot description');
     $check(is_wp_error(Store::update_description($custom, str_repeat('é', 2001))) && Store::lot($custom)->description === 'Suivi interne', 'Invalid update retains previous internal note');
     $check(Store::update_description($custom, '') === true && Store::lot($custom)->description === '', 'Responsible can clear an internal description');
-    $check(Store::lot($custom)->title === 'Coffret de 8 cookies — 40 CHF' && $custom_bons[0]->title === Store::lot($custom)->title, 'Gift copied consistently into lot and bon view');
+    $check(Store::lot($custom)->title === 'Coffret de 8 cookies' && (int) Store::lot($custom)->value_cents === 4000 && Store::gift_label(Store::lot($custom)) === 'Coffret de 8 cookies — 40 CHF' && $custom_bons[0]->title === Store::lot($custom)->title && (int) $custom_bons[0]->value_cents === 4000, 'Legacy gift string splits cleanly into title + value_cents while preserving gift_label');
+    $check(Store::parse_value('20') === 2000 && Store::parse_value('24,50') === 2450 && Store::parse_value('0') === 0 && is_wp_error(Store::parse_value('-1')) && is_wp_error(Store::parse_value('100001')) && is_wp_error(Store::parse_value('abc')), 'CHF unit value parser validates bounds and decimals');
+    $cornavin = Store::create_lot('RECETTE Cornavin', 3, bin2hex(random_bytes(32)), 'Boîte découverte', $future, '', 3500, 'Retrait en boutique Cornavin');
+    $check(is_int($cornavin), 'Create separated gift/value/pickup lot'); $lot_ids[] = $cornavin;
+    $cornavin_bon = Store::bons($cornavin)[0];
+    $check($cornavin_bon->title === 'Boîte découverte' && (int) $cornavin_bon->value_cents === 3500 && $cornavin_bon->pickup_text === 'Retrait en boutique Cornavin', 'Separated title, value_cents and pickup_text stored on lot and joined to bons');
+    $check(Store::gift_label($cornavin_bon) === 'Boîte découverte — 35 CHF' && Store::pickup_line($cornavin_bon) === 'Usage unique · Retrait en boutique Cornavin', 'Formatted gift and pickup labels rendered accurately');
+    $check(Store::update_pickup($cornavin, 'Retrait aux boutiques Cornavin et Terrassière') === true && Store::lot($cornavin)->pickup_text === 'Retrait aux boutiques Cornavin et Terrassière', 'Responsible can update pickup text on existing lot');
+    $check(is_wp_error(Store::update_pickup($cornavin, '')) && is_wp_error(Store::update_pickup($cornavin, str_repeat('x', 161))), 'Invalid pickup text refused');
+    global $wpdb;
+    $wpdb->update(Store::table('lots'), ['title' => 'Boîte de 4 cookies — 20 CHF', 'value_cents' => 0, 'pickup_text' => ''], ['id' => $cornavin]);
+    Store::migrate_legacy_lots();
+    $migrated = Store::lot($cornavin);
+    $check($migrated->title === 'Boîte de 4 cookies' && (int) $migrated->value_cents === 2000 && $migrated->pickup_text === Store::DEFAULT_PICKUP, 'migrate_legacy_lots splits historical CHF title and backfills default pickup');
+    $wpdb->update(Store::table('lots'), ['title' => 'Boîte découverte', 'value_cents' => 3500, 'pickup_text' => 'Retrait aux boutiques Cornavin et Terrassière'], ['id' => $cornavin]);
     $check(Store::expiry_label($custom_bons[0]->expires_at) === (new DateTimeImmutable($future))->format('d/m/Y'), 'Custom expiry date inclusive');
     $check($custom_bons[0]->expires_at === Store::lot($custom)->expires_at, 'Lot and every bon share exact expiry');
     $check(is_wp_error(Store::create_lot('Invalid gift', 1, bin2hex(random_bytes(32)), '', $future)), 'Empty gift refused');
@@ -157,7 +187,11 @@ try {
 
     $check(Store::redeem($bons[2]->token)['result'] === 'success', 'Seller may redeem');
     $check((int) Store::find($bons[2]->token)->redeemed_by === $seller_id, 'Seller recorded');
-    $check(is_wp_error(Store::update_description($custom, 'Seller edit')), 'Seller cannot edit private lot notes');
+    $check(is_wp_error(Store::update_description($custom, 'Seller edit')) && is_wp_error(Store::update_pickup($custom, 'Seller pickup')), 'Seller cannot edit private lot notes or pickup text');
+    $lot_amounts = Store::amounts($id);
+    $check($lot_amounts === ['total_cents' => 50000, 'used_cents' => 4000, 'available_cents' => 44000, 'expired_cents' => 2000], 'Per-lot CHF amounts track total, used, available and expired');
+    $global_amounts = Store::amounts(0);
+    $check($global_amounts['total_cents'] >= 50000 + 8000 + 10500 && $global_amounts['used_cents'] >= 4000, 'Global CHF amounts aggregate accurately across multi-value lots');
     $attributed = array_values(array_filter(Store::bons($id), static fn($row) => $row->token === $bons[2]->token))[0];
     $check(Store::redeemer_label($attributed) === get_userdata($seller_id)->display_name, 'Management lists the actual employee who redeemed');
     $deleted_account = clone $attributed; $deleted_account->redeemer_name = null;
@@ -178,9 +212,9 @@ try {
     $custom_png = Export::png($custom_bons[0]);
     file_put_contents(dirname(COOMS_BONS_FILE) . '/output/test-custom-bon.png', $custom_png);
     $check(getimagesizefromstring($custom_png)['mime'] === 'image/png', 'Custom gift PNG generated');
-    $long_bon = clone $custom_bons[0]; $long_bon->title = str_repeat('W',190);
-    $check(getimagesizefromstring(Export::png($long_bon))['mime'] === 'image/png', '190-character gift fits printable export');
-    $check(Store::lot($id)->title === Store::TITLE, 'Default lot gift remains unchanged');
+    $long_bon = clone $custom_bons[0]; $long_bon->title = str_repeat('W',190); $long_bon->pickup_text = str_repeat('R', 160);
+    $check(getimagesizefromstring(Export::png($long_bon))['mime'] === 'image/png', '190-character gift and 160-character pickup fit printable export');
+    $check(Store::lot($id)->title === Store::TITLE && (int) Store::lot($id)->value_cents === Store::DEFAULT_CENTS && Store::lot($id)->pickup_text === Store::DEFAULT_PICKUP, 'Default lot gift, value and pickup remain consistent');
 
     echo "SUCCESS: $passed checks. Fixture lots/users removed below.\n";
 } finally {

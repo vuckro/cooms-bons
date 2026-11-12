@@ -10,6 +10,7 @@ final class Plugin {
         add_action('admin_enqueue_scripts', [$this, 'assets']);
         add_action('admin_post_cooms_create', [$this, 'create']);
         add_action('admin_post_cooms_description', [$this, 'description']);
+        add_action('admin_post_cooms_pickup', [$this, 'pickup']);
         add_action('admin_post_cooms_export', [$this, 'export']);
         add_action('template_redirect', [$this, 'scan'], -100);
     }
@@ -25,7 +26,7 @@ final class Plugin {
     /** WooCommerce normally redirects accounts without edit_posts to My Account. */
     public function allow_seller_pages(bool $prevent): bool {
         $page = isset($_GET['page']) && is_string($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
-        if (current_user_can(Store::REDEEM) && in_array($page, ['cooms-bons', 'cooms-bons-scan', 'cooms-bons-help'], true)) {
+        if (current_user_can(Store::REDEEM) && in_array($page, Staff::allowed_admin_pages(), true)) {
             return false;
         }
         return $prevent;
@@ -67,7 +68,10 @@ final class Plugin {
         }
         if ($page === 'cooms-bons-new') {
             $error = '';
-            $name = ''; $quantity = 25; $gift = Store::TITLE; $description = '';
+            $name = ''; $quantity = 25; $gift = Store::TITLE;
+            $gift_value = Store::input_chf(Store::DEFAULT_CENTS);
+            $pickup_text = Store::DEFAULT_PICKUP;
+            $description = '';
             $valid_until = (new \DateTimeImmutable(Store::expiry(new \DateTimeImmutable('now')), new \DateTimeZone('UTC')))->modify('-1 second')->setTimezone(new \DateTimeZone('Europe/Zurich'))->format('Y-m-d');
             $key = bin2hex(random_bytes(32));
             $flash = isset($_GET['form_error']) && is_string($_GET['form_error']) ? sanitize_key(wp_unslash($_GET['form_error'])) : '';
@@ -78,6 +82,8 @@ final class Plugin {
                 if (is_array($saved)) {
                     $error = $saved['error']; $name = $saved['name']; $quantity = $saved['quantity'];
                     $gift = $saved['gift']; $valid_until = $saved['valid_until']; $key = $saved['key'];
+                    $gift_value = $saved['gift_value'] ?? $gift_value;
+                    $pickup_text = $saved['pickup_text'] ?? $pickup_text;
                     $description = $saved['description'] ?? '';
                 }
             }
@@ -89,6 +95,7 @@ final class Plugin {
         if (!in_array($status, ['available', 'used', 'expired'], true)) { $status = ''; }
         $page_num = max(1, isset($_GET['paged']) ? absint($_GET['paged']) : 1);
         $counts = Store::counts($lot_id);
+        $amounts = Store::amounts($lot_id);
         $total = $status ? $counts[$status] : $counts['total'];
         $page_num = min($page_num, max(1, (int) ceil($total / 30)));
         $view = isset($_GET['view']) && $_GET['view'] === 'bons' ? 'bons' : 'lots';
@@ -110,17 +117,23 @@ final class Plugin {
         $quantity = isset($_POST['quantity']) && is_scalar($_POST['quantity']) ? filter_var(wp_unslash($_POST['quantity']), FILTER_VALIDATE_INT) : 0;
         $key = isset($_POST['request_key']) && is_string($_POST['request_key']) ? sanitize_text_field(wp_unslash($_POST['request_key'])) : '';
         $gift = isset($_POST['gift']) && is_string($_POST['gift']) ? sanitize_text_field(wp_unslash($_POST['gift'])) : '';
+        $raw_value = isset($_POST['gift_value']) && is_string($_POST['gift_value']) ? trim(wp_unslash($_POST['gift_value'])) : Store::input_chf(Store::DEFAULT_CENTS);
+        $pickup_text = isset($_POST['pickup_text']) && is_string($_POST['pickup_text']) ? sanitize_text_field(wp_unslash($_POST['pickup_text'])) : Store::DEFAULT_PICKUP;
         $valid_until = isset($_POST['valid_until']) && is_string($_POST['valid_until']) ? wp_unslash($_POST['valid_until']) : '';
         $description = isset($_POST['description']) && is_string($_POST['description']) ? sanitize_textarea_field(wp_unslash($_POST['description'])) : '';
-        $id = Store::create_lot($name, (int) $quantity, $key, $gift, $valid_until, $description);
+        $parsed_value = Store::parse_value($raw_value);
+        $id = is_wp_error($parsed_value)
+            ? $parsed_value
+            : Store::create_lot($name, (int) $quantity, $key, $gift, $valid_until, $description, $parsed_value, $pickup_text);
         if (is_wp_error($id)) {
             $error = $id->get_error_message();
             if (!preg_match('/^[a-f0-9]{64}$/D', $key)) { $key = bin2hex(random_bytes(32)); }
             $flash = bin2hex(random_bytes(16));
             set_transient('cooms_form_' . get_current_user_id() . '_' . $flash, [
                 'error' => $error, 'name' => mb_substr($name, 0, 160), 'quantity' => (int) $quantity,
-                'gift' => mb_substr($gift, 0, 190), 'valid_until' => substr($valid_until, 0, 10), 'key' => $key,
-                'description' => mb_substr($description, 0, 2000),
+                'gift' => mb_substr($gift, 0, 190), 'gift_value' => mb_substr($raw_value, 0, 20),
+                'pickup_text' => mb_substr($pickup_text, 0, 160), 'valid_until' => substr($valid_until, 0, 10),
+                'key' => $key, 'description' => mb_substr($description, 0, 2000),
             ], 10 * MINUTE_IN_SECONDS);
             wp_safe_redirect(add_query_arg(['page' => 'cooms-bons-new', 'form_error' => $flash], admin_url('admin.php')), 303);
             exit;
@@ -141,6 +154,17 @@ final class Plugin {
         $result = Store::update_description($id, wp_unslash($_POST['description']));
         if (is_wp_error($result)) { wp_die(esc_html($result->get_error_message()), '', ['response' => $result->get_error_code() === 'missing' ? 404 : 400, 'back_link' => true]); }
         wp_safe_redirect(add_query_arg(['page' => 'cooms-bons', 'lot' => $id, 'description_saved' => 1], admin_url('admin.php')), 303);
+        exit;
+    }
+
+    public function pickup(): void {
+        if (!current_user_can(Store::MANAGE)) { wp_die('Accès réservé au responsable.', '', ['response' => 403]); }
+        $id = isset($_POST['lot']) && is_scalar($_POST['lot']) ? absint($_POST['lot']) : 0;
+        check_admin_referer('cooms_pickup_' . $id);
+        if (!isset($_POST['pickup_text']) || !is_string($_POST['pickup_text'])) { wp_die('Texte de retrait invalide.', '', ['response' => 400]); }
+        $result = Store::update_pickup($id, wp_unslash($_POST['pickup_text']));
+        if (is_wp_error($result)) { wp_die(esc_html($result->get_error_message()), '', ['response' => $result->get_error_code() === 'missing' ? 404 : 400, 'back_link' => true]); }
+        wp_safe_redirect(add_query_arg(['page' => 'cooms-bons', 'lot' => $id, 'pickup_saved' => 1], admin_url('admin.php')), 303);
         exit;
     }
 

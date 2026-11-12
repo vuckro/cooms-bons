@@ -25,7 +25,7 @@ body.adminkit .cb-app p { font-size: inherit; }
 body.adminkit .cb-app :is(.cb-row-meta, .cb-table thead th, .cb-status) {
   font-size: var(--ak-text-xs, 12px);
 }
-body.adminkit .cb-app :is(.cb-field p, .cb-section-heading p, .cb-submission-note, .cb-counts dt, .cb-download) {
+body.adminkit .cb-app :is(.cb-field p, .cb-section-heading p, .cb-submission-note, .cb-counts dt, .cb-count-amount, .cb-download) {
   font-size: var(--ak-text-s, 13px);
 }
 body.adminkit .cb-app .cb-table { font-size: var(--ak-text-m, 14px); }
@@ -83,7 +83,8 @@ body.adminkit .cb-app .cb-button:disabled {
   color: var(--ak-text-disabled, var(--cb-muted));
   box-shadow: none;
 }
-body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]),
+body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"], [type="password"]),
+body.adminkit .cb-app .cb-staff-pass-row input[type="password"],
 body.adminkit .cb-app .cb-work .cb-filters select {
   min-height: var(--ak-control-height, 32px);
   padding-block: var(--ak-space-xs, 4px);
@@ -101,12 +102,14 @@ body.adminkit .cb-app textarea {
 }
 body.adminkit .cb-app :focus-visible,
 body.adminkit .cb-app .cb-field input:focus-visible,
+body.adminkit .cb-app .cb-staff-pass-row input[type="password"]:focus-visible,
 body.adminkit .cb-app .cb-work .cb-filters select:focus-visible {
   outline: 2px solid transparent;
   outline-offset: 2px;
   box-shadow: var(--ak-focus-ring, 0 0 0 2px var(--cb-ink));
 }
 body.adminkit .cb-app .cb-field input:focus-visible,
+body.adminkit .cb-app .cb-staff-pass-row input[type="password"]:focus-visible,
 body.adminkit .cb-app .cb-work .cb-filters select:focus-visible {
   border-color: var(--ak-focus, var(--cb-ink));
 }
@@ -119,7 +122,8 @@ body.adminkit .cb-app { color-scheme: light; }
 @media (max-width: 782px) {
   body.adminkit .cb-app textarea { font-size: max(16px, var(--ak-text-m, 14px)); }
   body.adminkit .cb-app .cb-button,
-  body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"]),
+  body.adminkit .cb-app .cb-field input:is([type="text"], [type="number"], [type="date"], [type="email"], [type="password"]),
+  body.adminkit .cb-app .cb-staff-pass-row input[type="password"],
   body.adminkit .cb-app .cb-work .cb-filters select {
     min-height: var(--ak-control-height-touch, 44px);
     font-size: max(16px, var(--ak-text-m, 14px));

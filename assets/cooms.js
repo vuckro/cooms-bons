@@ -19,11 +19,48 @@
     });
   });
   var gift = document.querySelector("#cb-gift");
+  var giftValue = document.querySelector("#cb-gift-value");
+  var quantity = document.querySelector("#cb-quantity");
+  var pickup = document.querySelector("#cb-pickup-text");
   var date = document.querySelector("#cb-valid-until");
+  function formatChf(cents) {
+    var safe = Math.max(0, Math.round(cents));
+    var hasFraction = safe % 100 !== 0;
+    return (
+      (safe / 100).toLocaleString("fr-CH", {
+        minimumFractionDigits: hasFraction ? 2 : 0,
+        maximumFractionDigits: hasFraction ? 2 : 0,
+      }) + " CHF"
+    );
+  }
+  function parseCents(raw) {
+    var cleaned = String(raw || "").trim().replace(",", ".");
+    var parsed = Number(cleaned);
+    if (!cleaned || !Number.isFinite(parsed) || parsed < 0) return 0;
+    return Math.round(parsed * 100);
+  }
   function updatePreview() {
     if (!gift || !date) return;
-    document.querySelector("[data-gift-preview]").textContent =
-      gift.value.trim() || "Votre cadeau";
+    var title = gift.value.trim() || "Votre cadeau";
+    var cents = giftValue ? parseCents(giftValue.value) : 0;
+    var label =
+      cents > 0 && !/\bCHF\b/i.test(title)
+        ? title + " — " + formatChf(cents)
+        : title;
+    document.querySelector("[data-gift-preview]").textContent = label;
+    var pickupPreview = document.querySelector("[data-pickup-preview]");
+    if (pickupPreview && pickup) {
+      var text = pickup.value.trim() || "Retrait en boutique COOMS";
+      pickupPreview.textContent = /^(?:usage unique|un seul retrait)\b/i.test(text)
+        ? text
+        : "Usage unique · " + text;
+    }
+    var totalPreview = document.querySelector("[data-total-preview]");
+    if (totalPreview && quantity) {
+      var qty = Math.max(0, parseInt(quantity.value, 10) || 0);
+      totalPreview.textContent =
+        "Valeur totale du lot : " + formatChf(qty * cents);
+    }
     var parts = date.value.split("-");
     document.querySelector("[data-date-preview]").textContent =
       parts.length === 3
@@ -37,8 +74,9 @@
         : "Choisissez une date de validité";
   }
   if (gift && date) {
-    gift.addEventListener("input", updatePreview);
-    date.addEventListener("input", updatePreview);
+    [gift, giftValue, quantity, pickup, date].forEach(function (field) {
+      if (field) field.addEventListener("input", updatePreview);
+    });
   }
   var copyScanner = document.querySelector('[data-copy-scanner]');
   if (copyScanner) {
